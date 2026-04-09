@@ -1,6 +1,6 @@
 {
   "name": "get-gum",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Globally Unified Modules — reusable AI agent behavior bundles for Claude Code, Gemini CLI, Copilot, Cursor and more by Volchunovich",
   "type": "module",
   "bin": {
