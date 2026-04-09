@@ -35,4 +35,22 @@ describe('config', () => {
     const dir = getGumDir();
     expect(dir).toBe(path.join(os.homedir(), '.gum'));
   });
+
+  it('readConfig merges with CONFIG_DEFAULTS when a field is missing', () => {
+    // Write a config.yaml that only has storage, missing runtimes
+    fs.mkdirSync(tmpDir, { recursive: true });
+    fs.writeFileSync(path.join(tmpDir, 'config.yaml'), 'storage: /custom/path\n', 'utf-8');
+    const config = readConfig(tmpDir);
+    // storage from file
+    expect(config.storage).toBe('/custom/path');
+    // runtimes from CONFIG_DEFAULTS (empty array)
+    expect(config.runtimes).toEqual(CONFIG_DEFAULTS.runtimes);
+  });
+
+  it('readConfig throws a descriptive error on malformed YAML', () => {
+    fs.mkdirSync(tmpDir, { recursive: true });
+    // Tabs as indentation are illegal in YAML and will cause a parse error
+    fs.writeFileSync(path.join(tmpDir, 'config.yaml'), 'runtimes:\n\t- claude\n', 'utf-8');
+    expect(() => readConfig(tmpDir)).toThrow('Failed to parse config.yaml');
+  });
 });

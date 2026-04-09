@@ -3,7 +3,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { syncHooksToRuntime, removeHooksFromRuntime, readHooksManifest } from '../lib/hooks.js';
+import { syncHooksToRuntime, removeHooksFromRuntime, readHooksManifest, syncAllHooks } from '../lib/hooks.js';
+import { writeConfig } from '../lib/config.js';
+import { writeRegistry } from '../lib/registry.js';
 
 describe('hooks', () => {
   let tmpHome;
@@ -59,6 +61,35 @@ describe('hooks', () => {
     );
     const postToolUse = settings.hooks?.PostToolUse || [];
     expect(postToolUse).toHaveLength(0);
+  });
+
+  it('syncHooksToRuntime does not create duplicates when called twice', () => {
+    syncHooksToRuntime('test-mod', moduleHooks, ['claude'], tmpGum, tmpHome);
+    syncHooksToRuntime('test-mod', moduleHooks, ['claude'], tmpGum, tmpHome);
+    const settings = JSON.parse(
+      fs.readFileSync(path.join(tmpHome, '.claude', 'settings.json'), 'utf-8'),
+    );
+    // Should still be exactly 1 entry, not 2
+    expect(settings.hooks.PostToolUse).toHaveLength(1);
+  });
+
+  it('syncAllHooks re-syncs cleanly without duplicates', () => {
+    // Set up a proper gumDir with config and registry pointing to a module with hooks
+    const modDir = path.join(tmpGum, 'modules', 'test-mod');
+    fs.mkdirSync(modDir, { recursive: true });
+    fs.writeFileSync(path.join(modDir, 'hooks.json'), JSON.stringify(moduleHooks), 'utf-8');
+    writeConfig({ runtimes: ['claude'], storage: path.join(tmpGum, 'modules') }, tmpGum);
+    writeRegistry({ storage: path.join(tmpGum, 'modules'), modules: { 'test-mod': modDir } }, tmpGum);
+
+    // Sync once, then again
+    syncAllHooks(tmpGum, tmpHome);
+    syncAllHooks(tmpGum, tmpHome);
+
+    const settings = JSON.parse(
+      fs.readFileSync(path.join(tmpHome, '.claude', 'settings.json'), 'utf-8'),
+    );
+    // Re-syncing twice should still produce exactly 1 entry
+    expect(settings.hooks.PostToolUse).toHaveLength(1);
   });
 
   it('does not touch hooks from other modules', () => {

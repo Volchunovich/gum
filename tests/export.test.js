@@ -69,6 +69,35 @@ describe('export/import', () => {
     expect(rules).toContain('Imported rule');
   });
 
+  it('importModule rejects bundle missing module.name', () => {
+    const badBundle = {
+      gum_version: '1.0.0',
+      module: { description: 'No name here', version: '1.0.0' },
+      rules: '- rule\n',
+      hooks: {},
+    };
+    const importPath = path.join(tmpDir, 'bad.gum.json');
+    fs.writeFileSync(importPath, JSON.stringify(badBundle));
+    expect(() => importModule(importPath, storagePath, tmpDir)).toThrow('Invalid bundle');
+  });
+
+  it('importModule rejects path traversal names', () => {
+    const badBundle = {
+      gum_version: '1.0.0',
+      module: { name: '../hack', description: 'Traversal', version: '1.0.0' },
+      rules: '- rule\n',
+      hooks: {},
+    };
+    const importPath = path.join(tmpDir, 'traversal.gum.json');
+    fs.writeFileSync(importPath, JSON.stringify(badBundle));
+    expect(() => importModule(importPath, storagePath, tmpDir)).toThrow('Invalid module name');
+  });
+
+  it('exportModule throws on non-existent module', () => {
+    const outPath = path.join(tmpDir, 'ghost.gum.json');
+    expect(() => exportModule('ghost-module', outPath, tmpDir)).toThrow('not found');
+  });
+
   it('importModule writes hooks.json when hooks present', () => {
     const exportData = {
       gum_version: '1.0.0',

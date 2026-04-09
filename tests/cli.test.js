@@ -58,6 +58,29 @@ describe('cli', () => {
     expect(fs.existsSync(outFile)).toBe(true);
   });
 
+  it('doctor --repair reports nothing to repair on clean install', () => {
+    const out = execFileSync('node', [CLI, 'doctor', '--repair', '--gum-dir', tmpDir], {
+      encoding: 'utf-8',
+    });
+    expect(out).toContain('Nothing to repair');
+  });
+
+  it('doctor --repair removes orphaned entry and reports it', () => {
+    // Inject an orphaned entry directly into the registry
+    writeRegistry({ storage: storagePath, modules: { ghost: '/nonexistent/path/ghost' } }, tmpDir);
+    const out = execFileSync('node', [CLI, 'doctor', '--repair', '--gum-dir', tmpDir], {
+      encoding: 'utf-8',
+    });
+    expect(out).toContain('ghost');
+  });
+
+  it('sync command outputs success message', () => {
+    const out = execFileSync('node', [CLI, 'sync', '--gum-dir', tmpDir, '--home', tmpDir], {
+      encoding: 'utf-8',
+    });
+    expect(out).toContain('Sync complete');
+  });
+
   it('import creates module from .gum.json file', () => {
     const importData = {
       gum_version: '1.0.0',

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { runDoctor, repairDoctor } from '../lib/doctor.js';
+import { runDoctor, repairDoctor, BUDGET_LIMIT } from '../lib/doctor.js';
 import { writeRegistry } from '../lib/registry.js';
 import { createModule } from '../lib/modules.js';
 
@@ -51,6 +51,16 @@ describe('doctor', () => {
     fs.unlinkSync(path.join(tmpDir, 'registry.json'));
     const report = runDoctor(tmpDir);
     expect(report.issues.some(i => i.type === 'missing_registry')).toBe(true);
+  });
+
+  it('BUDGET_LIMIT is exported and has the correct value', () => {
+    expect(BUDGET_LIMIT).toBe(150);
+  });
+
+  it('repairDoctor returns empty removed array when nothing to fix', () => {
+    createModule('clean-mod', 'Clean module', storagePath, tmpDir);
+    const result = repairDoctor(tmpDir);
+    expect(result.removed).toEqual([]);
   });
 
   it('repairDoctor removes orphaned entries', () => {

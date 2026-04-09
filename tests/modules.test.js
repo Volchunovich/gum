@@ -12,7 +12,7 @@ import {
   listModules,
   resolveEnabledModules,
 } from '../lib/modules.js';
-import { writeRegistry, readRegistry } from '../lib/registry.js';
+import { writeRegistry, readRegistry, addModule } from '../lib/registry.js';
 
 describe('modules', () => {
   let tmpDir;
@@ -87,6 +87,41 @@ describe('modules', () => {
     const enabled = resolveEnabledModules(tmpDir, projectDir);
     expect(enabled.find(m => m.name === 'mod-a')).toBeTruthy();
     expect(enabled.find(m => m.name === 'mod-b')).toBeFalsy();
+  });
+
+  it('createModule rejects invalid names with path separators', () => {
+    expect(() => createModule('../hack', 'bad', storagePath, tmpDir)).toThrow('Invalid module name');
+  });
+
+  it('createModule rejects names with path traversal', () => {
+    expect(() => createModule('path/traversal', 'bad', storagePath, tmpDir)).toThrow('Invalid module name');
+  });
+
+  it('createModule rejects empty name', () => {
+    expect(() => createModule('', 'bad', storagePath, tmpDir)).toThrow('Invalid module name');
+  });
+
+  it('listModules skips modules with corrupt manifest without crashing', () => {
+    // Create a valid module first
+    createModule('good-mod', 'Good module', storagePath, tmpDir);
+    // Manually create a directory with a broken module.yaml
+    const badModDir = path.join(storagePath, 'bad-mod');
+    fs.mkdirSync(badModDir, { recursive: true });
+    fs.writeFileSync(path.join(badModDir, 'module.yaml'), 'name:\n\t- broken\n', 'utf-8');
+    // Register bad-mod in the registry
+    addModule('bad-mod', badModDir, tmpDir);
+
+    const mods = listModules(tmpDir);
+    // Should only return the good module; bad-mod is skipped
+    expect(mods.find(m => m.name === 'good-mod')).toBeTruthy();
+    expect(mods.find(m => m.name === 'bad-mod')).toBeFalsy();
+  });
+
+  it('readModuleManifest throws descriptive error on bad YAML', () => {
+    const badModDir = path.join(storagePath, 'bad-yaml-mod');
+    fs.mkdirSync(badModDir, { recursive: true });
+    fs.writeFileSync(path.join(badModDir, 'module.yaml'), 'name:\n\t- broken\n', 'utf-8');
+    expect(() => readModuleManifest(badModDir)).toThrow('Failed to parse module.yaml');
   });
 
   it('resolveEnabledModules applies .gum.local.json on top of .gum.json', () => {

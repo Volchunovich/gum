@@ -25,6 +25,22 @@ describe('uninstall', () => {
     fs.rmSync(tmpHome, { recursive: true, force: true });
   });
 
+  it('update command re-creates integration files', () => {
+    // Remove the integration file to simulate a stale install
+    const integrationFile = path.join(tmpHome, '.claude', 'rules', 'gum.md');
+    fs.unlinkSync(integrationFile);
+    expect(fs.existsSync(integrationFile)).toBe(false);
+
+    execFileSync('node', [
+      CLI, 'update', '--gum-dir', path.join(tmpHome, '.gum'), '--home', tmpHome,
+    ], { encoding: 'utf-8' });
+
+    // Integration file should be re-created
+    expect(fs.existsSync(integrationFile)).toBe(true);
+    const content = fs.readFileSync(integrationFile, 'utf-8');
+    expect(content).toContain('GUM');
+  });
+
   it('uninstall removes .gum and integration files but keeps storage', () => {
     execFileSync('node', [
       CLI, 'uninstall', '--gum-dir', path.join(tmpHome, '.gum'), '--home', tmpHome, '--yes',
