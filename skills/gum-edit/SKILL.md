@@ -10,6 +10,18 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 **Announce at start:** "I'm using the gum-edit skill to modify an existing GUM module."
 
+## Checklist
+
+You MUST create a task for each of these items and complete them in order:
+
+1. **Read registry** — find all available modules
+2. **Select module** — ask user which module to edit (or detect from context)
+3. **Show current state** — display rules.md, hooks.json, module.yaml
+4. **Discuss changes** — ask what the user wants to modify
+5. **Update files** — apply changes to rules.md, hooks.json, or module.yaml
+6. **Resync hooks** — if hooks.json changed, sync to runtime settings
+7. **Confirm changes** — show what was updated
+
 ## The Iron Law
 
 ```

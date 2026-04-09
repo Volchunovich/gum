@@ -10,6 +10,19 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 **Announce at start:** "I'm using the gum-create skill to build a new GUM module."
 
+## Checklist
+
+You MUST create a task for each of these items and complete them in order:
+
+1. **Ask module name** — one question, wait for answer
+2. **Ask description** — one-line summary of what the module does
+3. **Gather behaviors** — ask user to describe all rules/behaviors they want
+4. **Classify each behavior** — mechanical (→ hook) or judgment-based (→ rule)
+5. **Confirm classification** — present the split to user, get approval
+6. **Generate module files** — module.yaml, rules.md, hooks.json
+7. **Register and sync** — add to registry, sync hooks to runtime settings
+8. **Confirm active** — show the user their module is live
+
 ## The Iron Law
 
 ```

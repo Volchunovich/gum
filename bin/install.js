@@ -260,6 +260,44 @@ async function run() {
     writeRegistry({ storage, modules: {} }, gumDir);
   }
 
+  // Add GUM permissions to runtime settings (so skills can read/write ~/.gum/ without prompting)
+  for (const runtimeId of runtimes) {
+    if (runtimeId !== 'claude') continue; // Only Claude Code has settings.json permissions
+    const effectiveHomeDir = getRuntimeConfigDir(runtimeId, homeDir, configDirOverrides);
+    const settingsPath = path.join(effectiveHomeDir, '.claude', 'settings.json');
+    let settings = {};
+    if (fs.existsSync(settingsPath)) {
+      try {
+        settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+      } catch {
+        settings = {};
+      }
+    }
+    if (!settings.permissions) settings.permissions = {};
+    if (!Array.isArray(settings.permissions.allow)) settings.permissions.allow = [];
+
+    const gumPermissions = [
+      'Read(~/.gum/**)',
+      'Write(~/.gum/**)',
+      `Read(${storage}/**)`,
+      `Write(${storage}/**)`,
+    ];
+
+    let added = false;
+    for (const perm of gumPermissions) {
+      if (!settings.permissions.allow.includes(perm)) {
+        settings.permissions.allow.push(perm);
+        added = true;
+      }
+    }
+
+    if (added) {
+      fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
+      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
+      console.log(`  ${c.green}✓${c.reset} Added GUM permissions to ${c.bold}Claude Code${c.reset} settings`);
+    }
+  }
+
   // Offer starter modules
   const startersSource = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', 'starters');
   if (fs.existsSync(startersSource)) {

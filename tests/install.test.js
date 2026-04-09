@@ -132,6 +132,51 @@ describe('install (non-interactive)', () => {
     expect(rules).toBe('custom rules');
   });
 
+  it('adds GUM permissions to Claude Code settings.json', () => {
+    execFileSync('node', [
+      INSTALLER, '--claude', '--storage', tmpStorage, '--home', tmpHome,
+    ], { encoding: 'utf-8' });
+
+    const settingsPath = path.join(tmpHome, '.claude', 'settings.json');
+    expect(fs.existsSync(settingsPath)).toBe(true);
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+    expect(settings.permissions).toBeDefined();
+    expect(settings.permissions.allow).toContain('Read(~/.gum/**)');
+    expect(settings.permissions.allow).toContain('Write(~/.gum/**)');
+    expect(settings.permissions.allow.some(p => p.includes(tmpStorage))).toBe(true);
+  });
+
+  it('does not duplicate permissions on reinstall', () => {
+    execFileSync('node', [
+      INSTALLER, '--claude', '--storage', tmpStorage, '--home', tmpHome,
+    ], { encoding: 'utf-8' });
+    execFileSync('node', [
+      INSTALLER, '--claude', '--storage', tmpStorage, '--home', tmpHome,
+    ], { encoding: 'utf-8' });
+
+    const settingsPath = path.join(tmpHome, '.claude', 'settings.json');
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+    const gumReadCount = settings.permissions.allow.filter(p => p === 'Read(~/.gum/**)').length;
+    expect(gumReadCount).toBe(1);
+  });
+
+  it('preserves existing settings when adding permissions', () => {
+    // Create settings with existing content
+    const settingsDir = path.join(tmpHome, '.claude');
+    fs.mkdirSync(settingsDir, { recursive: true });
+    fs.writeFileSync(path.join(settingsDir, 'settings.json'), JSON.stringify({
+      enabledPlugins: { "some-plugin": true },
+    }));
+
+    execFileSync('node', [
+      INSTALLER, '--claude', '--storage', tmpStorage, '--home', tmpHome,
+    ], { encoding: 'utf-8' });
+
+    const settings = JSON.parse(fs.readFileSync(path.join(settingsDir, 'settings.json'), 'utf-8'));
+    expect(settings.enabledPlugins['some-plugin']).toBe(true);
+    expect(settings.permissions.allow).toContain('Read(~/.gum/**)');
+  });
+
   it('detects existing config on second install', () => {
     // First install
     execFileSync('node', [
