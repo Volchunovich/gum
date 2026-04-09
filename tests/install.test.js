@@ -89,6 +89,49 @@ describe('install (non-interactive)', () => {
     expect(fs.existsSync(path.join(tmpHome, '.claude', 'rules', 'gum.md'))).toBe(false);
   });
 
+  it('--starters flag installs starter modules into storage', () => {
+    execFileSync('node', [
+      INSTALLER, '--claude', '--storage', tmpStorage, '--home', tmpHome, '--starters',
+    ], { encoding: 'utf-8' });
+
+    // Starter modules should exist in storage
+    expect(fs.existsSync(path.join(tmpStorage, 'clean-commits', 'module.yaml'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpStorage, 'clean-commits', 'rules.md'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpStorage, 'code-quality', 'module.yaml'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpStorage, 'thoughtful-dev', 'module.yaml'))).toBe(true);
+
+    // Should be registered in registry
+    const reg = JSON.parse(fs.readFileSync(path.join(tmpHome, '.gum', 'registry.json'), 'utf-8'));
+    expect(reg.modules['clean-commits']).toBeDefined();
+    expect(reg.modules['code-quality']).toBeDefined();
+    expect(reg.modules['thoughtful-dev']).toBeDefined();
+  });
+
+  it('without --starters flag does not install starters in non-interactive mode', () => {
+    execFileSync('node', [
+      INSTALLER, '--claude', '--storage', tmpStorage, '--home', tmpHome,
+    ], { encoding: 'utf-8' });
+
+    // No starters should be installed
+    expect(fs.existsSync(path.join(tmpStorage, 'clean-commits'))).toBe(false);
+    expect(fs.existsSync(path.join(tmpStorage, 'code-quality'))).toBe(false);
+  });
+
+  it('--starters does not overwrite existing modules', () => {
+    // Create a module with same name as starter
+    const existingDir = path.join(tmpStorage, 'clean-commits');
+    fs.mkdirSync(existingDir, { recursive: true });
+    fs.writeFileSync(path.join(existingDir, 'rules.md'), 'custom rules');
+
+    execFileSync('node', [
+      INSTALLER, '--claude', '--storage', tmpStorage, '--home', tmpHome, '--starters',
+    ], { encoding: 'utf-8' });
+
+    // Should keep original content, not overwrite
+    const rules = fs.readFileSync(path.join(existingDir, 'rules.md'), 'utf-8');
+    expect(rules).toBe('custom rules');
+  });
+
   it('detects existing config on second install', () => {
     // First install
     execFileSync('node', [

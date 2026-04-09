@@ -260,6 +260,53 @@ async function run() {
     writeRegistry({ storage, modules: {} }, gumDir);
   }
 
+  // Offer starter modules
+  const startersSource = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', 'starters');
+  if (fs.existsSync(startersSource)) {
+    const availableStarters = fs.readdirSync(startersSource).filter(
+      d => fs.statSync(path.join(startersSource, d)).isDirectory()
+    );
+    if (availableStarters.length > 0) {
+      let selectedStarters = [];
+      if (isNonInteractive) {
+        if (hasFlag('starters')) {
+          selectedStarters = availableStarters;
+        }
+      } else {
+        const { checkbox: starterCheckbox } = await import('@inquirer/prompts');
+        const starterDescriptions = {};
+        for (const name of availableStarters) {
+          try {
+            const yaml = (await import('yaml')).default;
+            const manifest = yaml.parse(fs.readFileSync(path.join(startersSource, name, 'module.yaml'), 'utf-8'));
+            starterDescriptions[name] = manifest.description || '';
+          } catch {
+            starterDescriptions[name] = '';
+          }
+        }
+        selectedStarters = await starterCheckbox({
+          message: 'Install starter modules? (recommended)',
+          choices: availableStarters.map(name => ({
+            name: `${name} — ${starterDescriptions[name]}`,
+            value: name,
+            checked: name !== 'thoughtful-dev',
+          })),
+        });
+      }
+
+      for (const starterName of selectedStarters) {
+        const src = path.join(startersSource, starterName);
+        const dest = path.join(storage, starterName);
+        if (!fs.existsSync(dest)) {
+          fs.cpSync(src, dest, { recursive: true });
+          const { addModule } = await import('../lib/registry.js');
+          addModule(starterName, dest, gumDir);
+          console.log(`  ${c.green}✓${c.reset} Installed starter: ${c.bold}${starterName}${c.reset}`);
+        }
+      }
+    }
+  }
+
   for (const runtimeId of runtimes) {
     const effectiveHomeDir = getRuntimeConfigDir(runtimeId, homeDir, configDirOverrides);
     writeIntegrationFile(runtimeId, effectiveHomeDir);
