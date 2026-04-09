@@ -50,6 +50,7 @@ New to GUM? Here's the 60-second version:
 |-------|-------------|-------------|
 | `/gum-create` | Create a new module from scratch | "I want to enforce X" |
 | `/gum-edit` | Modify an existing module | "Change the rules in my X module" |
+| `/gum-sync` | Reload modules in current session | After toggle/create/edit/remove |
 | `/gum-optimize` | Deep audit of all rules and modules | "My rules feel bloated" or "agent is ignoring things" |
 | `/gum-status` | Show active modules with expanded rules | "What's active right now?" |
 | `/gum-help` | This reference | "How does GUM work?" |
