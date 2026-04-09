@@ -1,0 +1,53 @@
+name: Bug Report
+description: Report a bug in GUM
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting a bug!
+  - type: input
+    id: version
+    attributes:
+      label: GUM Version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Runtime
+      options:
+        - Claude Code
+        - Gemini CLI
+        - Copilot
+        - Cursor
+        - Windsurf
+        - OpenCode
+        - Codex
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      placeholder: Describe the bug
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `npx get-gum`
+        2. Select ...
+        3. See error
+    validations:
+      required: true

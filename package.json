@@ -1,23 +1,47 @@
 {
   "name": "get-gum",
   "version": "1.0.0",
-  "description": "Globally Unified Modules — reusable AI agent behavior bundles",
+  "description": "Globally Unified Modules — reusable AI agent behavior bundles for Claude Code, Gemini CLI, Copilot, Cursor and more by Volchunovich",
   "type": "module",
   "bin": {
-    "get-gum": "./bin/cli.js"
+    "get-gum": "./bin/install.js"
   },
+  "files": [
+    "bin",
+    "lib",
+    "skills",
+    "starters",
+    "templates"
+  ],
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "claude-code",
     "gemini",
+    "gemini-cli",
+    "copilot",
+    "cursor",
+    "windsurf",
+    "codex",
     "ai-agent",
     "skills",
-    "modules"
+    "modules",
+    "configuration",
+    "hooks"
   ],
+  "author": "Volchunovich",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Volchunovich/gum.git"
+  },
+  "homepage": "https://github.com/Volchunovich/gum",
+  "bugs": {
+    "url": "https://github.com/Volchunovich/gum/issues"
+  },
   "engines": {
     "node": ">=20.0.0"
   },
