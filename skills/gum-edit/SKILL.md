@@ -40,6 +40,7 @@ Never ask "what do you want to change?" without first showing the user exactly w
 - User realizes a rule should be a hook (or vice versa)
 
 **Use this ESPECIALLY when:**
+
 - User says "that rule isn't working" -- may need rule-to-hook promotion
 - User wants to tweak hook behavior (different event, different tools)
 - Module has grown stale and needs cleanup
@@ -52,6 +53,7 @@ Never ask "what do you want to change?" without first showing the user exactly w
 2. If user specified a module name, locate it. If not found, show available modules and ask.
 3. If user didn't specify, show the list and ask which one to edit:
    > "Which module do you want to edit? Here are your modules:
+   >
    > - `enforce-tdd` — Enforce test-driven development workflow
    > - `auto-lint` — Run eslint after file edits
    > - `team-standards` — Team coding standards"
@@ -59,6 +61,7 @@ Never ask "what do you want to change?" without first showing the user exactly w
 ### Phase 2: Read and Present Current State
 
 **Read ALL module files:**
+
 - `module.yaml` -- name, description, version, enabled status
 - `rules.md` -- current rules content
 - `hooks.json` -- current hooks (if exists)
@@ -94,6 +97,7 @@ Ask what they want to change. Listen for:
 - **Rule-to-hook promotion** -- actively suggest this when you spot mechanical rules
 
 **Actively suggest promotions:**
+
 > "I notice you have 'always format code after editing' as a rule. This is mechanical -- want me to convert it to a PostToolUse hook for 100% enforcement?"
 
 ### Phase 4: Apply Changes
@@ -101,7 +105,8 @@ Ask what they want to change. Listen for:
 1. **Update the relevant files** -- rules.md, hooks.json, and/or module.yaml
 2. **Bump the version** in module.yaml if the change is substantive
 3. **Run `npx get-gum sync` via Bash** -- this resyncs rules to runtime rules directories and merges hooks into runtime settings. Do NOT manually edit registry.json or copy files.
-4. **Confirm changes** with a summary:
+4. **Read the updated rules file** -- after sync, read `~/.claude/rules/gum/<module-name>.md` so changes take effect immediately in this session.
+5. **Confirm changes** with a summary:
    > "Updated `enforce-tdd`: added 1 rule, promoted 1 rule to hook, removed 1 stale rule. Synced."
 
 ## Key Rules
@@ -116,14 +121,14 @@ Ask what they want to change. Listen for:
 
 ## Anti-Patterns
 
-| Anti-Pattern | Why It's Wrong | Do This Instead |
-|---|---|---|
-| Asking "what do you want to change?" immediately | User doesn't remember module contents | Show current state first, then ask |
-| Editing hooks.json without resyncing | Hooks file updated but runtime doesn't know | Always resync after hooks.json changes |
-| Ignoring mechanical rules during edit | Missed optimization opportunity | Actively suggest rule-to-hook promotion |
-| Overwriting the entire rules.md | Destroys rules user didn't mention | Surgically add/remove/modify specific rules |
-| Not checking if module exists in registry | Cryptic file-not-found errors | Read registry first, handle missing gracefully |
-| Editing without reading config.yaml | Wrong paths, missing runtime sync | Read config before any file operations |
+| Anti-Pattern                                     | Why It's Wrong                              | Do This Instead                                |
+| ------------------------------------------------ | ------------------------------------------- | ---------------------------------------------- |
+| Asking "what do you want to change?" immediately | User doesn't remember module contents       | Show current state first, then ask             |
+| Editing hooks.json without resyncing             | Hooks file updated but runtime doesn't know | Always resync after hooks.json changes         |
+| Ignoring mechanical rules during edit            | Missed optimization opportunity             | Actively suggest rule-to-hook promotion        |
+| Overwriting the entire rules.md                  | Destroys rules user didn't mention          | Surgically add/remove/modify specific rules    |
+| Not checking if module exists in registry        | Cryptic file-not-found errors               | Read registry first, handle missing gracefully |
+| Editing without reading config.yaml              | Wrong paths, missing runtime sync           | Read config before any file operations         |
 
 ## Examples
 

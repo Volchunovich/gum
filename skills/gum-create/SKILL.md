@@ -150,7 +150,8 @@ For EVERY behavior the user describes, classify it:
 ### Phase 4: Sync and Activate
 
 1. **Run `npx get-gum sync` via Bash** -- this automatically registers the module in registry.json, syncs rules to runtime rules directories, and merges hooks into runtime settings. Do NOT manually edit registry.json or copy files.
-2. **Confirm to user:** "Module `<name>` created and active. It has X rules and Y hooks."
+2. **Read the synced rules file** -- after sync, read `~/.claude/rules/gum/<module-name>.md` so the new module's rules take effect immediately in this session (rules files are normally loaded only at session start).
+3. **Confirm to user:** "Module `<name>` created and active. It has X rules and Y hooks."
 
 ## Key Rules
 
