@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'Action to perform'
+        description: "Action to perform"
         required: true
         type: choice
         options:
@@ -12,11 +12,11 @@ on:
           - rc
           - finalize
       version:
-        description: 'Version (e.g., 1.1.0 or 2.0.0)'
+        description: "Version (e.g., 1.1.0 or 2.0.0)"
         required: true
         type: string
       dry_run:
-        description: 'Dry run (skip npm publish, tagging, and push)'
+        description: "Dry run (skip npm publish, tagging, and push)"
         required: false
         type: boolean
         default: false
@@ -47,8 +47,8 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.0$'; then
-            echo "::error::Version must end in .0 (e.g., 1.1.0 or 2.0.0)."
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version must be semver format (e.g., 0.1.0, 0.1.1, 1.0.0)."
             exit 1
           fi
           BRANCH="release/${VERSION}"
@@ -129,8 +129,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
 
       - name: Determine pre-release version
         id: prerelease
@@ -251,8 +251,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
 
       - name: Configure git identity
         run: |
