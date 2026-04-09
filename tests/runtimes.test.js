@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { RUNTIMES, getRulesPath, getSettingsPath, writeIntegrationFile, getRuntime } from '../lib/runtimes.js';
+import { RUNTIMES, getRulesPath, getSettingsPath, writeIntegrationFile, getRuntime, getModulesRulesDir } from '../lib/runtimes.js';
 
 describe('runtimes', () => {
   let tmpHome;
@@ -99,7 +99,22 @@ describe('runtimes', () => {
     expect(fs.existsSync(p)).toBe(true);
     const content = fs.readFileSync(p, 'utf-8');
     expect(content).toContain('GUM');
-    expect(content).toContain('registry.json');
+    expect(content).toContain('.gum.json');
+  });
+
+  it('getModulesRulesDir returns correct path for claude', () => {
+    const p = getModulesRulesDir('claude', tmpHome);
+    expect(p).toBe(path.join(tmpHome, '.claude', 'rules', 'gum'));
+  });
+
+  it('getModulesRulesDir returns correct path for gemini', () => {
+    const p = getModulesRulesDir('gemini', tmpHome);
+    expect(p).toBe(path.join(tmpHome, '.gemini', 'rules', 'gum'));
+  });
+
+  it('getModulesRulesDir returns correct path for kilo', () => {
+    const p = getModulesRulesDir('kilo', tmpHome);
+    expect(p).toBe(path.join(tmpHome, '.config', 'kilo', 'rules', 'gum'));
   });
 
   it('getSettingsPath returns correct path for claude', () => {

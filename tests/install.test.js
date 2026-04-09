@@ -31,6 +31,17 @@ describe('install (non-interactive)', () => {
     expect(fs.existsSync(path.join(tmpHome, '.claude', 'rules', 'gum.md'))).toBe(true);
   });
 
+  it('creates rules/gum/ subdirectory for each installed runtime', () => {
+    execFileSync('node', [
+      INSTALLER, '--claude', '--gemini', '--storage', tmpStorage, '--home', tmpHome,
+    ], { encoding: 'utf-8' });
+
+    expect(fs.existsSync(path.join(tmpHome, '.claude', 'rules', 'gum'))).toBe(true);
+    expect(fs.statSync(path.join(tmpHome, '.claude', 'rules', 'gum')).isDirectory()).toBe(true);
+    expect(fs.existsSync(path.join(tmpHome, '.gemini', 'rules', 'gum'))).toBe(true);
+    expect(fs.statSync(path.join(tmpHome, '.gemini', 'rules', 'gum')).isDirectory()).toBe(true);
+  });
+
   it('supports multiple runtimes', () => {
     execFileSync('node', [
       INSTALLER, '--claude', '--gemini', '--storage', tmpStorage, '--home', tmpHome,

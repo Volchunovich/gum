@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { syncHooksToRuntime, removeHooksFromRuntime, readHooksManifest, syncAllHooks } from '../lib/hooks.js';
+import { syncHooksToRuntime, removeHooksFromRuntime, readHooksManifest, syncAllHooks, syncRulesToRuntime } from '../lib/hooks.js';
 import { writeConfig } from '../lib/config.js';
 import { writeRegistry } from '../lib/registry.js';
 
@@ -92,6 +92,21 @@ describe('hooks', () => {
     expect(settings.hooks.PostToolUse).toHaveLength(1);
   });
 
+  it('syncAllHooks also syncs rules files', () => {
+    const modDir = path.join(tmpGum, 'modules', 'rules-mod');
+    fs.mkdirSync(modDir, { recursive: true });
+    fs.writeFileSync(path.join(modDir, 'module.yaml'), 'name: rules-mod\nenabled: true\n', 'utf-8');
+    fs.writeFileSync(path.join(modDir, 'rules.md'), '# Rules for rules-mod\n', 'utf-8');
+    writeConfig({ runtimes: ['claude'], storage: path.join(tmpGum, 'modules') }, tmpGum);
+    writeRegistry({ storage: path.join(tmpGum, 'modules'), modules: { 'rules-mod': modDir } }, tmpGum);
+
+    syncAllHooks(tmpGum, tmpHome);
+
+    const rulesFile = path.join(tmpHome, '.claude', 'rules', 'gum', 'rules-mod.md');
+    expect(fs.existsSync(rulesFile)).toBe(true);
+    expect(fs.readFileSync(rulesFile, 'utf-8')).toContain('Rules for rules-mod');
+  });
+
   it('does not touch hooks from other modules', () => {
     syncHooksToRuntime('mod-a', moduleHooks, ['claude'], tmpGum, tmpHome);
     const otherHooks = {
@@ -111,5 +126,88 @@ describe('hooks', () => {
     );
     expect(settings.hooks.PostToolUse).toHaveLength(1);
     expect(settings.hooks.PostToolUse[0].matcher).toBe('Bash');
+  });
+});
+
+describe('syncRulesToRuntime', () => {
+  let tmpHome;
+  let tmpGum;
+
+  beforeEach(() => {
+    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'gum-rules-'));
+    tmpGum = path.join(tmpHome, '.gum');
+    fs.mkdirSync(tmpGum, { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpHome, { recursive: true, force: true });
+  });
+
+  function makeModule(name, enabled, hasRules = true) {
+    const modDir = path.join(tmpGum, 'modules', name);
+    fs.mkdirSync(modDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(modDir, 'module.yaml'),
+      `name: ${name}\nenabled: ${enabled}\n`,
+      'utf-8',
+    );
+    if (hasRules) {
+      fs.writeFileSync(path.join(modDir, 'rules.md'), `# Rules for ${name}\n`, 'utf-8');
+    }
+    return modDir;
+  }
+
+  it('copies enabled module rules.md into the runtime rules dir', () => {
+    const modDir = makeModule('my-mod', true);
+    writeConfig({ runtimes: ['claude'], storage: path.join(tmpGum, 'modules') }, tmpGum);
+    writeRegistry({ storage: path.join(tmpGum, 'modules'), modules: { 'my-mod': modDir } }, tmpGum);
+
+    syncRulesToRuntime(tmpGum, tmpHome);
+
+    const dest = path.join(tmpHome, '.claude', 'rules', 'gum', 'my-mod.md');
+    expect(fs.existsSync(dest)).toBe(true);
+    expect(fs.readFileSync(dest, 'utf-8')).toContain('Rules for my-mod');
+  });
+
+  it('removes rules file for disabled module', () => {
+    const enabledDir = makeModule('enabled-mod', true);
+    const disabledDir = makeModule('disabled-mod', false);
+    writeConfig({ runtimes: ['claude'], storage: path.join(tmpGum, 'modules') }, tmpGum);
+    writeRegistry({
+      storage: path.join(tmpGum, 'modules'),
+      modules: { 'enabled-mod': enabledDir, 'disabled-mod': disabledDir },
+    }, tmpGum);
+
+    // Place a stale rules file for the disabled module
+    const gumRulesDir = path.join(tmpHome, '.claude', 'rules', 'gum');
+    fs.mkdirSync(gumRulesDir, { recursive: true });
+    fs.writeFileSync(path.join(gumRulesDir, 'disabled-mod.md'), 'stale content', 'utf-8');
+
+    syncRulesToRuntime(tmpGum, tmpHome);
+
+    expect(fs.existsSync(path.join(gumRulesDir, 'enabled-mod.md'))).toBe(true);
+    expect(fs.existsSync(path.join(gumRulesDir, 'disabled-mod.md'))).toBe(false);
+  });
+
+  it('syncs rules for all configured runtimes', () => {
+    const modDir = makeModule('multi-mod', true);
+    writeConfig({ runtimes: ['claude', 'gemini'], storage: path.join(tmpGum, 'modules') }, tmpGum);
+    writeRegistry({ storage: path.join(tmpGum, 'modules'), modules: { 'multi-mod': modDir } }, tmpGum);
+
+    syncRulesToRuntime(tmpGum, tmpHome);
+
+    expect(fs.existsSync(path.join(tmpHome, '.claude', 'rules', 'gum', 'multi-mod.md'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpHome, '.gemini', 'rules', 'gum', 'multi-mod.md'))).toBe(true);
+  });
+
+  it('skips modules without rules.md', () => {
+    const modDir = makeModule('no-rules-mod', true, false);
+    writeConfig({ runtimes: ['claude'], storage: path.join(tmpGum, 'modules') }, tmpGum);
+    writeRegistry({ storage: path.join(tmpGum, 'modules'), modules: { 'no-rules-mod': modDir } }, tmpGum);
+
+    syncRulesToRuntime(tmpGum, tmpHome);
+
+    const dest = path.join(tmpHome, '.claude', 'rules', 'gum', 'no-rules-mod.md');
+    expect(fs.existsSync(dest)).toBe(false);
   });
 });

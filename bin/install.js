@@ -8,7 +8,8 @@ import os from 'os';
 import { createRequire } from 'module';
 import { writeConfig, readConfig } from '../lib/config.js';
 import { writeRegistry, readRegistry } from '../lib/registry.js';
-import { RUNTIMES, writeIntegrationFile, getRulesPath } from '../lib/runtimes.js';
+import { RUNTIMES, writeIntegrationFile, getRulesPath, getModulesRulesDir } from '../lib/runtimes.js';
+import { syncRulesToRuntime } from '../lib/hooks.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
@@ -395,8 +396,12 @@ async function run() {
   for (const runtimeId of runtimes) {
     const effectiveHomeDir = getRuntimeConfigDir(runtimeId, homeDir, configDirOverrides);
     writeIntegrationFile(runtimeId, effectiveHomeDir);
+    fs.mkdirSync(getModulesRulesDir(runtimeId, effectiveHomeDir), { recursive: true });
     console.log(`  ${c.green}✓${c.reset} Installed integration for ${c.bold}${runtimeId}${c.reset}`);
   }
+
+  // Initial sync of module rules into runtime rules directories
+  syncRulesToRuntime(gumDir, homeDir);
 
   // Copy skills to runtime directories
   const skillsSource = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', 'skills');
