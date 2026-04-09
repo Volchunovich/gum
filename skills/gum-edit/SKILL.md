@@ -49,7 +49,7 @@ Never ask "what do you want to change?" without first showing the user exactly w
 
 ### Phase 1: Find the Module
 
-1. **Read `~/.gum/registry.json`** to get the list of all modules
+1. **Run `npx get-gum list` via Bash** to get the list of all modules
 2. If user specified a module name, locate it. If not found, show available modules and ask.
 3. If user didn't specify, show the list and ask which one to edit:
    > "Which module do you want to edit? Here are your modules:
@@ -111,7 +111,7 @@ Ask what they want to change. Listen for:
 
 ## Key Rules
 
-- **MUST** read `~/.gum/config.yaml` to find module paths (or run `npx get-gum list`)
+- **MUST** run `npx get-gum list` via Bash to find modules
 - **MUST** show current module content before asking what to change
 - **MUST** run `npx get-gum sync` after any file changes -- never manually edit registry.json
 - **MUST** suggest rule-to-hook promotion when spotting mechanical rules
@@ -146,16 +146,16 @@ Agent: "Here's the current state of `team-standards`:
           - Write tests before implementation
 
         Hooks:
-          - PostToolUse on [Write, Edit]: prettier --write $GUM_FILE
+          - PostToolUse on [Write, Edit]: prettier --write
 
         What error handling rule do you want to add?"
 
 User: "Always use custom error classes instead of throwing generic Error"
 
-Agent: *appends rule to rules.md*
+Agent: *appends rule to rules.md, runs `npx get-gum sync` via Bash*
 Agent: "Added to `team-standards` rules.md:
         '- Always use custom error classes instead of throwing generic Error'
-        No hooks changed, no resync needed."
+        Ran `npx get-gum sync` to propagate the rules.md change."
 ```
 
 **Example 2: Rule-to-hook promotion during edit**

@@ -82,7 +82,7 @@ For EVERY behavior the user describes, classify it:
 **Mechanical examples (MUST suggest as hooks):**
 
 - "Run lint after editing" --> `PostToolUse` hook on Write/Edit
-- "Format code before committing" --> `PreCommit` hook
+- "Format code before committing" --> `PreToolUse` hook with `Bash(git commit*)` matcher
 - "Remove Co-Authored-By lines" --> `PostToolUse` hook with sed/grep
 - "Run tests after changes" --> `PostToolUse` hook
 
