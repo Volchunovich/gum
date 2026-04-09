@@ -180,6 +180,57 @@ describe('install (non-interactive)', () => {
     expect(settings.permissions.allow).toContain(`Read(${path.resolve(gumDir)}/**)`);
   });
 
+  it('auto-discovers existing modules in storage', () => {
+    // Create a module manually in storage before install
+    const modDir = path.join(tmpStorage, 'pre-existing');
+    fs.mkdirSync(modDir, { recursive: true });
+    fs.writeFileSync(path.join(modDir, 'module.yaml'), 'name: pre-existing\nenabled: true\n');
+    fs.writeFileSync(path.join(modDir, 'rules.md'), '- some rule\n');
+
+    execFileSync('node', [
+      INSTALLER, '--claude', '--storage', tmpStorage, '--home', tmpHome,
+    ], { encoding: 'utf-8' });
+
+    const reg = JSON.parse(fs.readFileSync(path.join(tmpHome, '.gum', 'registry.json'), 'utf-8'));
+    expect(reg.modules['pre-existing']).toBe(modDir);
+  });
+
+  it('auto-discover skips folders without module.yaml', () => {
+    // Create a folder without module.yaml
+    fs.mkdirSync(path.join(tmpStorage, 'not-a-module'), { recursive: true });
+    fs.writeFileSync(path.join(tmpStorage, 'not-a-module', 'random.txt'), 'hello');
+
+    execFileSync('node', [
+      INSTALLER, '--claude', '--storage', tmpStorage, '--home', tmpHome,
+    ], { encoding: 'utf-8' });
+
+    const reg = JSON.parse(fs.readFileSync(path.join(tmpHome, '.gum', 'registry.json'), 'utf-8'));
+    expect(reg.modules['not-a-module']).toBeUndefined();
+  });
+
+  it('delegates subcommands to cli.js', () => {
+    // Install first
+    execFileSync('node', [
+      INSTALLER, '--claude', '--storage', tmpStorage, '--home', tmpHome,
+    ], { encoding: 'utf-8' });
+
+    // Run list via installer entry point — should delegate to cli.js
+    const out = execFileSync('node', [
+      INSTALLER, 'list', '--gum-dir', path.join(tmpHome, '.gum'),
+    ], { encoding: 'utf-8' });
+
+    expect(out).toContain('No modules');
+  });
+
+  it('--help shows COMMANDS section', () => {
+    const out = execFileSync('node', [INSTALLER, '--help'], { encoding: 'utf-8' });
+    expect(out).toContain('COMMANDS');
+    expect(out).toContain('npx get-gum list');
+    expect(out).toContain('npx get-gum sync');
+    expect(out).toContain('npx get-gum doctor');
+    expect(out).toContain('npx get-gum toggle');
+  });
+
   it('detects existing config on second install', () => {
     // First install
     execFileSync('node', [

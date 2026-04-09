@@ -13,6 +13,20 @@ import { RUNTIMES, writeIntegrationFile, getRulesPath } from '../lib/runtimes.js
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
 
+// Delegate to CLI if first arg is a known subcommand
+const CLI_COMMANDS = ['list', 'toggle', 'remove', 'sync', 'doctor', 'export', 'import', 'update', 'uninstall'];
+const firstArg = process.argv[2];
+if (firstArg && CLI_COMMANDS.includes(firstArg)) {
+  const { execFileSync } = await import('child_process');
+  const cliPath = path.resolve(path.dirname(new URL(import.meta.url).pathname), 'cli.js');
+  try {
+    execFileSync('node', [cliPath, ...process.argv.slice(2)], { stdio: 'inherit' });
+  } catch (e) {
+    process.exit(e.status || 1);
+  }
+  process.exit(0);
+}
+
 const args = process.argv.slice(2);
 
 // Colors
@@ -75,6 +89,18 @@ if (hasFlag('help') || hasFlag('h')) {
   console.log(`    ${c.cyan}COPILOT_CONFIG_DIR${c.reset}     Override Copilot config directory`);
   console.log(`    ${c.cyan}CURSOR_CONFIG_DIR${c.reset}      Override Cursor config directory`);
   console.log(`    ${c.cyan}WINDSURF_CONFIG_DIR${c.reset}    Override Windsurf config directory`);
+  console.log('');
+  console.log(`  ${c.bold}COMMANDS${c.reset} ${c.dim}(use after install)${c.reset}`);
+  console.log(`    ${c.cyan}npx get-gum list${c.reset}          Show all modules with status`);
+  console.log(`    ${c.cyan}npx get-gum toggle${c.reset}        Enable/disable modules (interactive)`);
+  console.log(`    ${c.cyan}npx get-gum remove${c.reset}        Remove a module`);
+  console.log(`    ${c.cyan}npx get-gum sync${c.reset}          Resync hooks to runtime settings`);
+  console.log(`    ${c.cyan}npx get-gum doctor${c.reset}        Health check`);
+  console.log(`    ${c.cyan}npx get-gum doctor --repair${c.reset}  Auto-fix issues`);
+  console.log(`    ${c.cyan}npx get-gum export <name>${c.reset} Export module to .gum.json`);
+  console.log(`    ${c.cyan}npx get-gum import <file>${c.reset} Import module from file or URL`);
+  console.log(`    ${c.cyan}npx get-gum update${c.reset}        Update GUM skills in all runtimes`);
+  console.log(`    ${c.cyan}npx get-gum uninstall${c.reset}     Remove GUM (keeps modules)`);
   console.log('');
   console.log(`  ${c.bold}EXAMPLES${c.reset}`);
   console.log(`    ${c.dim}# Interactive install${c.reset}`);
@@ -258,6 +284,25 @@ async function run() {
 
   if (!fs.existsSync(path.join(gumDir, 'registry.json'))) {
     writeRegistry({ storage, modules: {} }, gumDir);
+  }
+
+  // Auto-discover existing modules in storage and register them
+  const reg = readRegistry(gumDir);
+  let discovered = 0;
+  if (fs.existsSync(storage)) {
+    for (const dir of fs.readdirSync(storage)) {
+      const modDir = path.join(storage, dir);
+      if (!fs.statSync(modDir).isDirectory()) continue;
+      if (!fs.existsSync(path.join(modDir, 'module.yaml'))) continue;
+      if (!reg.modules[dir]) {
+        reg.modules[dir] = modDir;
+        discovered++;
+      }
+    }
+    if (discovered > 0) {
+      writeRegistry(reg, gumDir);
+      console.log(`  ${c.green}✓${c.reset} Discovered ${c.bold}${discovered}${c.reset} existing module${discovered > 1 ? 's' : ''} in storage`);
+    }
   }
 
   // Add GUM permissions to runtime settings (so skills can read/write ~/.gum/ without prompting)
