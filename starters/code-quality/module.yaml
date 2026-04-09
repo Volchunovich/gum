@@ -1,0 +1,4 @@
+name: code-quality
+description: "Auto-format after edits, lint before commit"
+version: 1.0.0
+enabled: true

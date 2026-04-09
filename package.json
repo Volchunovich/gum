@@ -1,0 +1,32 @@
+{
+  "name": "get-gum",
+  "version": "1.0.0",
+  "description": "Globally Unified Modules — reusable AI agent behavior bundles",
+  "type": "module",
+  "bin": {
+    "get-gum": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "claude-code",
+    "gemini",
+    "ai-agent",
+    "skills",
+    "modules"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.4"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "8.4.1",
+    "commander": "14.0.3",
+    "yaml": "2.8.3"
+  }
+}

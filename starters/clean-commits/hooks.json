@@ -1,0 +1,16 @@
+{
+  "claude": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit*)",
+            "command": "INPUT=$(cat); MSG=$(echo \"$INPUT\" | jq -r '.tool_input.command'); if echo \"$MSG\" | grep -q 'Co-Authored-By'; then echo 'Blocked: Co-Authored-By detected' >&2; exit 2; fi; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

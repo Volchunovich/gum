@@ -1,0 +1,4 @@
+name: clean-commits
+description: "No Co-Authored-By, conventional commits, English, max 72 chars"
+version: 1.0.0
+enabled: true
