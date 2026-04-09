@@ -12,7 +12,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 ## Checklist
 
-You MUST create a task for each of these items and complete them in order:
+IMMEDIATELY on skill load — before asking ANY question or producing ANY output other than the announcement — create a TaskCreate for EACH of these items:
 
 1. **Read registry** — find all available modules
 2. **Select module** — ask user which module to edit (or detect from context)
@@ -21,6 +21,8 @@ You MUST create a task for each of these items and complete them in order:
 5. **Update files** — apply changes to rules.md, hooks.json, or module.yaml
 6. **Resync hooks** — if hooks.json changed, sync to runtime settings
 7. **Confirm changes** — show what was updated
+
+Mark each task as completed as you finish it. Do NOT batch — mark done immediately.
 
 ## The Iron Law
 

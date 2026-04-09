@@ -12,7 +12,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep
 
 ## Checklist
 
-You MUST create a task for each of these items and complete them in order:
+IMMEDIATELY on skill load — before asking ANY question or producing ANY output other than the announcement — create a TaskCreate for EACH of these items:
 
 1. **Ask module name** — one question, wait for answer
 2. **Ask description** — one-line summary of what the module does
@@ -22,6 +22,8 @@ You MUST create a task for each of these items and complete them in order:
 6. **Generate module files** — module.yaml, rules.md, hooks.json
 7. **Register and sync** — add to registry, sync hooks to runtime settings
 8. **Confirm active** — show the user their module is live
+
+Mark each task as completed as you finish it. Do NOT batch — mark done immediately.
 
 ## The Iron Law
 
