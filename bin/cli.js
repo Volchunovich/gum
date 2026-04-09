@@ -177,8 +177,10 @@ program
           }
           const { toggleModule } = await import("../lib/modules.js");
           toggleModule(modPath, enabled);
+          const homeDir = opts.home || os.homedir();
+          syncAllHooks(gumDir, homeDir);
           console.log(
-            `${opts.module} ${enabled ? "enabled" : "disabled"} globally`,
+            `${opts.module} ${enabled ? "enabled" : "disabled"} globally. Synced ✅`,
           );
         }
         return;
@@ -213,6 +215,10 @@ program
       }
       if (changes === 0) {
         console.log("  No changes.");
+      } else {
+        const homeDir = opts.home || os.homedir();
+        syncAllHooks(gumDir, homeDir);
+        console.log("  Synced ✅");
       }
     } catch (e) {
       console.error(`Error: ${e.message}`);
