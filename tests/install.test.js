@@ -141,9 +141,10 @@ describe('install (non-interactive)', () => {
     expect(fs.existsSync(settingsPath)).toBe(true);
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
     expect(settings.permissions).toBeDefined();
-    expect(settings.permissions.allow).toContain('Read(~/.gum/**)');
-    expect(settings.permissions.allow).toContain('Write(~/.gum/**)');
-    expect(settings.permissions.allow.some(p => p.includes(tmpStorage))).toBe(true);
+    const gumDir = path.join(tmpHome, '.gum');
+    expect(settings.permissions.allow).toContain(`Read(${path.resolve(gumDir)}/**)`);
+    expect(settings.permissions.allow).toContain(`Write(${path.resolve(gumDir)}/**)`);
+    expect(settings.permissions.allow.some(p => p.includes(path.resolve(tmpStorage)))).toBe(true);
   });
 
   it('does not duplicate permissions on reinstall', () => {
@@ -156,7 +157,8 @@ describe('install (non-interactive)', () => {
 
     const settingsPath = path.join(tmpHome, '.claude', 'settings.json');
     const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-    const gumReadCount = settings.permissions.allow.filter(p => p === 'Read(~/.gum/**)').length;
+    const gumDir = path.join(tmpHome, '.gum');
+    const gumReadCount = settings.permissions.allow.filter(p => p === `Read(${path.resolve(gumDir)}/**)`).length;
     expect(gumReadCount).toBe(1);
   });
 
@@ -174,7 +176,8 @@ describe('install (non-interactive)', () => {
 
     const settings = JSON.parse(fs.readFileSync(path.join(settingsDir, 'settings.json'), 'utf-8'));
     expect(settings.enabledPlugins['some-plugin']).toBe(true);
-    expect(settings.permissions.allow).toContain('Read(~/.gum/**)');
+    const gumDir = path.join(tmpHome, '.gum');
+    expect(settings.permissions.allow).toContain(`Read(${path.resolve(gumDir)}/**)`);
   });
 
   it('detects existing config on second install', () => {

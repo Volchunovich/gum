@@ -276,11 +276,13 @@ async function run() {
     if (!settings.permissions) settings.permissions = {};
     if (!Array.isArray(settings.permissions.allow)) settings.permissions.allow = [];
 
+    const absoluteGumDir = path.resolve(gumDir);
+    const absoluteStorage = path.resolve(storage);
     const gumPermissions = [
-      'Read(~/.gum/**)',
-      'Write(~/.gum/**)',
-      `Read(${storage}/**)`,
-      `Write(${storage}/**)`,
+      `Read(${absoluteGumDir}/**)`,
+      `Write(${absoluteGumDir}/**)`,
+      `Read(${absoluteStorage}/**)`,
+      `Write(${absoluteStorage}/**)`,
     ];
 
     let added = false;
