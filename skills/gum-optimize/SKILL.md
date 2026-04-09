@@ -1,7 +1,6 @@
 ---
 name: gum-optimize
 description: Analyze agent context and optimize GUM modules for better compliance
-allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 # Optimize GUM Modules
@@ -42,14 +41,12 @@ You MUST read ALL sources before presenting a single finding. Partial reads prod
 
 **You MUST read every single one of these. Skipping any source means missed findings.**
 
-| Source | Path | What You're Looking For |
-|--------|------|------------------------|
-| Registry | `~/.gum/registry.json` | All modules, enabled/disabled status |
-| Module rules | `<storage>/<module>/rules.md` for each enabled module | Rule content, line counts, vagueness |
-| Module hooks | `<storage>/<module>/hooks.json` for each enabled module | Hook coverage, mechanical enforcement |
-| Project CLAUDE.md | `./CLAUDE.md` | Rules that should be GUM modules |
-| User CLAUDE.md | `~/.claude/CLAUDE.md` | Global rules that should be GUM modules |
-| Project rules | `.claude/rules/*.md` | Additional rule files |
+1. **Run `npx get-gum list --gum-dir ~/.gum` via Bash** — get all modules and their status
+2. **Run `npx get-gum doctor --gum-dir ~/.gum` via Bash** — get context budget and integrity report
+3. **Read synced rules** from `~/.claude/rules/gum/*.md` — these are the active module rules (auto-loaded, no permission needed)
+4. **Read project CLAUDE.md** from `./CLAUDE.md` (if exists) — rules that should be GUM modules
+5. **Read user CLAUDE.md** from `~/.claude/CLAUDE.md` (if exists) — global rules that should be GUM modules
+6. **Read project rules** from `.claude/rules/*.md` (if any) — additional rule files
 
 **Read ALL of them. Then proceed.**
 
@@ -154,13 +151,18 @@ Group findings by severity:
 **For EVERY finding, offer to execute the fix immediately:**
 > "Want me to fix any of these? I can handle them one at a time, or all at once."
 
+**After any changes to module files, run `npx get-gum sync` via Bash to apply them.**
+
 ## Key Rules
 
 - **MUST** read ALL sources before presenting any findings -- no partial audits
+- **MUST** use `npx get-gum list` and `npx get-gum doctor` via Bash for module info
 - **MUST** count actual lines, not estimate -- precision matters for budget checks
 - **MUST** present conflicts with specific module names and the contradicting rules
 - **MUST** offer to execute each suggestion immediately
 - **MUST** group findings by severity (critical > recommended > advisory)
+- **MUST** run `npx get-gum sync` after any module file changes
+- **NEVER** manually edit `~/.gum/registry.json` -- use CLI commands
 - **NEVER** diagnose from a partial read -- read everything first
 - **NEVER** present findings without actionable next steps
 - **NEVER** silently skip a source because it doesn't exist -- note its absence

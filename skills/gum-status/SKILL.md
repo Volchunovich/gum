@@ -1,7 +1,6 @@
 ---
 name: gum-status
 description: Show active GUM modules and their rules in the current session
-allowed-tools: Read, Glob, Grep
 ---
 
 # GUM Status
@@ -37,10 +36,10 @@ SHOW THE RULES, NOT JUST THE NAMES.
 
 Read these in order:
 
-1. **`~/.gum/registry.json`** -- all known modules and their storage paths
-2. **For each module: `<path>/module.yaml`** -- name, description, enabled status
-3. **`.gum.json` in current directory** -- team-level overrides (if exists)
-4. **`.gum.local.json` in current directory** -- personal overrides (if exists)
+1. **Run `npx get-gum list --gum-dir ~/.gum` via Bash** -- get all modules and their enabled/disabled status
+2. **Read `~/.claude/rules/gum/*.md`** -- these are the synced active rules (auto-loaded, no permission needed)
+3. **Read `.gum.json` in current directory** -- team-level overrides (if exists)
+4. **Read `.gum.local.json` in current directory** -- personal overrides (if exists)
 
 ### Phase 2: Apply Override Priority
 

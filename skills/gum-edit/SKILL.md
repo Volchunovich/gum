@@ -1,7 +1,6 @@
 ---
 name: gum-edit
 description: Edit an existing GUM module — update rules, hooks, or settings
-allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 # Edit GUM Module
@@ -101,22 +100,18 @@ Ask what they want to change. Listen for:
 
 1. **Update the relevant files** -- rules.md, hooks.json, and/or module.yaml
 2. **Bump the version** in module.yaml if the change is substantive
-3. **If hooks.json was modified:**
-   - Read `~/.gum/config.yaml` to get installed runtimes
-   - Resync hooks to all runtime settings files
-   - **MUST resync. Changed hooks that aren't synced are silently inactive.**
+3. **Run `npx get-gum sync` via Bash** -- this resyncs rules to runtime rules directories and merges hooks into runtime settings. Do NOT manually edit registry.json or copy files.
 4. **Confirm changes** with a summary:
-   > "Updated `enforce-tdd`: added 1 rule, promoted 1 rule to hook, removed 1 stale rule. Hooks resynced."
+   > "Updated `enforce-tdd`: added 1 rule, promoted 1 rule to hook, removed 1 stale rule. Synced."
 
 ## Key Rules
 
-- **MUST** read registry first to find the module path
+- **MUST** read `~/.gum/config.yaml` to find module paths (or run `npx get-gum list`)
 - **MUST** show current module content before asking what to change
-- **MUST** resync hooks if hooks.json was modified -- no exceptions
-- **MUST** read config.yaml for runtimes before syncing hooks
+- **MUST** run `npx get-gum sync` after any file changes -- never manually edit registry.json
 - **MUST** suggest rule-to-hook promotion when spotting mechanical rules
 - **NEVER** edit a module without showing its current state first
-- **NEVER** modify hooks.json without resyncing afterward
+- **NEVER** manually write to `~/.gum/registry.json` -- use `npx get-gum sync`
 - **NEVER** silently skip missing files -- if hooks.json doesn't exist, say so
 
 ## Anti-Patterns

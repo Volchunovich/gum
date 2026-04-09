@@ -1,7 +1,6 @@
 ---
 name: gum-create
 description: Create a new GUM module with rules and optional hooks
-allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 # Create GUM Module
@@ -20,7 +19,7 @@ IMMEDIATELY on skill load — before asking ANY question or producing ANY output
 4. **Classify each behavior** — mechanical (→ hook) or judgment-based (→ rule)
 5. **Confirm classification** — present the split to user, get approval
 6. **Generate module files** — module.yaml, rules.md, hooks.json
-7. **Register and sync** — add to registry, sync hooks to runtime settings
+7. **Sync** — run `npx get-gum sync` via Bash to register module and sync rules/hooks
 8. **Confirm active** — show the user their module is live
 
 Mark each task as completed as you finish it. Do NOT batch — mark done immediately.
@@ -41,11 +40,13 @@ Rules depend on LLM compliance (~70%). Hooks are system-enforced (100%). If a be
 - User wants to automate a pre/post action (lint, format, strip lines)
 
 **Use this ESPECIALLY when:**
+
 - User keeps repeating the same instruction every session
 - User describes something mechanical ("always run X after Y")
 - User wants team-wide behavior enforcement
 
 **Don't skip when:**
+
 - User says "just add it to CLAUDE.md" -- GUM modules are portable, CLAUDE.md is not
 - User thinks it's "too small for a module" -- small, focused modules are ideal
 
@@ -56,11 +57,13 @@ Rules depend on LLM compliance (~70%). Hooks are system-enforced (100%). If a be
 **MUST ask one question at a time. NEVER batch questions.**
 
 Bad (batching):
+
 > "What's the module name, description, and what rules do you want?"
 
 Good (sequential):
+
 > "What should this module be called?"
-> *(wait for answer)*
+> _(wait for answer)_
 > "Got it. What should this module do? Describe the behaviors you want."
 
 1. **Ask for module name** -- short, kebab-case (e.g., `enforce-tdd`, `no-console-log`)
@@ -71,24 +74,27 @@ Good (sequential):
 
 For EVERY behavior the user describes, classify it:
 
-| Type | Signal | Action |
-|------|--------|--------|
+| Type           | Signal                                                        | Action              |
+| -------------- | ------------------------------------------------------------- | ------------------- |
 | **Mechanical** | Can be checked by regex, CLI tool, or script. Zero ambiguity. | Suggest as **hook** |
-| **Judgment** | Requires understanding context, intent, or tradeoffs. | Keep as **rule** |
+| **Judgment**   | Requires understanding context, intent, or tradeoffs.         | Keep as **rule**    |
 
 **Mechanical examples (MUST suggest as hooks):**
+
 - "Run lint after editing" --> `PostToolUse` hook on Write/Edit
 - "Format code before committing" --> `PreCommit` hook
 - "Remove Co-Authored-By lines" --> `PostToolUse` hook with sed/grep
 - "Run tests after changes" --> `PostToolUse` hook
 
 **Judgment examples (keep as rules):**
+
 - "Prefer composition over inheritance"
 - "Use the brainstorming skill before implementing features"
 - "Keep functions under 30 lines when possible"
 - "Write descriptive variable names"
 
 **When suggesting a hook over a rule:**
+
 > "This sounds mechanical -- 'always run lint after editing' can be a system hook that runs automatically with 100% compliance. As a rule, the agent follows it ~70% of the time. Want me to set it up as a hook instead?"
 
 ### Phase 3: Read Config and Generate Files
@@ -100,6 +106,7 @@ For EVERY behavior the user describes, classify it:
 2. **Create module directory:** `<storage>/<module-name>/`
 
 3. **Create `module.yaml`:**
+
    ```yaml
    name: <module-name>
    description: <one-line description>
@@ -108,6 +115,7 @@ For EVERY behavior the user describes, classify it:
    ```
 
 4. **Create `rules.md`** with the judgment-based rules:
+
    ```markdown
    # <Module Name> Rules
 
@@ -115,33 +123,34 @@ For EVERY behavior the user describes, classify it:
    - Always use the brainstorming skill before implementing new features
    ```
 
-5. **Create `hooks.json`** (if any hooks were identified) with **per-runtime sections for every installed runtime:**
+5. **Create `hooks.json`** (if any hooks were identified) with **per-runtime sections using the native settings.json format:**
+
    ```json
    {
-     "claude": [
-       {
-         "event": "PostToolUse",
-         "tools": ["Write", "Edit"],
-         "command": "eslint --fix $GUM_FILE"
-       }
-     ],
-     "cursor": [
-       {
-         "event": "PostToolUse",
-         "tools": ["Write", "Edit"],
-         "command": "eslint --fix $GUM_FILE"
-       }
-     ]
+     "claude": {
+       "PostToolUse": [
+         {
+           "matcher": "Edit|Write",
+           "hooks": [
+             {
+               "type": "command",
+               "command": "jq -r '.tool_input.file_path' | xargs npx eslint --fix"
+             }
+           ]
+         }
+       ]
+     }
    }
    ```
 
+   **CRITICAL FORMAT:** Each runtime key contains an object where keys are event names (PreToolUse, PostToolUse, Stop, etc.) and values are arrays of hook entries. This matches the Claude Code settings.json hooks format exactly. Do NOT use a flat array — it MUST be `{ "EventName": [entries] }`.
+
    **MUST include a section for EVERY runtime listed in config.yaml.** Do not skip runtimes.
 
-### Phase 4: Register and Activate
+### Phase 4: Sync and Activate
 
-1. **Add entry to `~/.gum/registry.json`** -- the module is now known to GUM
-2. **If hooks exist, sync them** -- read `hooks.json` and merge into each runtime's settings file
-3. **Confirm to user:** "Module `<name>` created and active. It has X rules and Y hooks."
+1. **Run `npx get-gum sync` via Bash** -- this automatically registers the module in registry.json, syncs rules to runtime rules directories, and merges hooks into runtime settings. Do NOT manually edit registry.json or copy files.
+2. **Confirm to user:** "Module `<name>` created and active. It has X rules and Y hooks."
 
 ## Key Rules
 
@@ -149,22 +158,21 @@ For EVERY behavior the user describes, classify it:
 - **MUST** read `~/.gum/config.yaml` before generating any files
 - **MUST** suggest hooks over rules for any mechanical behavior
 - **MUST** generate hooks.json with sections for ALL installed runtimes
-- **MUST** register in `~/.gum/registry.json` after file creation
-- **MUST** sync hooks if hooks.json was created
+- **MUST** run `npx get-gum sync` after creating module files -- never manually edit registry.json
 - **NEVER** create a module without a description
 - **NEVER** leave a mechanical rule as a rule when it could be a hook
-- **NEVER** skip the registry step -- unregistered modules are invisible
+- **NEVER** manually write to `~/.gum/registry.json` -- use `npx get-gum sync` instead
 
 ## Anti-Patterns
 
-| Anti-Pattern | Why It's Wrong | Do This Instead |
-|---|---|---|
-| Asking all questions at once | Overwhelms user, gets vague answers | One question at a time, build understanding |
-| Putting "run lint" as a rule | ~70% compliance vs 100% with hooks | Suggest hook, explain the compliance difference |
-| Skipping config.yaml read | Wrong storage path, missing runtimes | Always read config first |
-| Creating hooks.json with only one runtime | Other runtimes lose enforcement | Include ALL installed runtimes |
-| Not syncing hooks after creation | Hooks exist in file but aren't active | Always sync after creating hooks.json |
-| Creating huge multi-purpose modules | Hard to toggle, hard to share | One concern per module |
+| Anti-Pattern                              | Why It's Wrong                        | Do This Instead                                 |
+| ----------------------------------------- | ------------------------------------- | ----------------------------------------------- |
+| Asking all questions at once              | Overwhelms user, gets vague answers   | One question at a time, build understanding     |
+| Putting "run lint" as a rule              | ~70% compliance vs 100% with hooks    | Suggest hook, explain the compliance difference |
+| Skipping config.yaml read                 | Wrong storage path, missing runtimes  | Always read config first                        |
+| Creating hooks.json with only one runtime | Other runtimes lose enforcement       | Include ALL installed runtimes                  |
+| Not syncing hooks after creation          | Hooks exist in file but aren't active | Always sync after creating hooks.json           |
+| Creating huge multi-purpose modules       | Hard to toggle, hard to share         | One concern per module                          |
 
 ## Examples
 
