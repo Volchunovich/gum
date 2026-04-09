@@ -55,7 +55,7 @@ function getFlagValue(flag) {
 if (hasFlag('help') || hasFlag('h')) {
   console.log(LOGO);
   console.log(`  ${c.bold}USAGE${c.reset}`);
-  console.log(`    npx get-gum [flags]\n`);
+  console.log(`    npx get-gum@latest [flags]\n`);
   console.log(`  ${c.bold}FLAGS${c.reset}`);
   console.log(`    ${c.cyan}--help, -h${c.reset}             Show this help message`);
   console.log(`    ${c.cyan}--claude${c.reset}               Install for Claude Code`);
@@ -78,19 +78,19 @@ if (hasFlag('help') || hasFlag('h')) {
   console.log('');
   console.log(`  ${c.bold}EXAMPLES${c.reset}`);
   console.log(`    ${c.dim}# Interactive install${c.reset}`);
-  console.log(`    npx get-gum`);
+  console.log(`    npx get-gum@latest`);
   console.log('');
   console.log(`    ${c.dim}# Install for Claude only (non-interactive)${c.reset}`);
-  console.log(`    npx get-gum --claude --storage ~/my-modules`);
+  console.log(`    npx get-gum@latest --claude --storage ~/my-modules`);
   console.log('');
   console.log(`    ${c.dim}# Install for all runtimes at once${c.reset}`);
-  console.log(`    npx get-gum --all --storage ~/my-modules`);
+  console.log(`    npx get-gum@latest --all --storage ~/my-modules`);
   console.log('');
   console.log(`    ${c.dim}# Install for multiple specific runtimes${c.reset}`);
-  console.log(`    npx get-gum --claude --gemini --storage ~/my-modules`);
+  console.log(`    npx get-gum@latest --claude --gemini --storage ~/my-modules`);
   console.log('');
   console.log(`    ${c.dim}# Override config dir for a runtime${c.reset}`);
-  console.log(`    npx get-gum --claude --storage ~/my-modules --config-dir claude=/custom/path`);
+  console.log(`    npx get-gum@latest --claude --storage ~/my-modules --config-dir claude=/custom/path`);
   console.log('');
   console.log(`    ${c.dim}# Uninstall GUM${c.reset}`);
   console.log(`    npx get-gum --uninstall`);

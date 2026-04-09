@@ -46,7 +46,7 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: |
-        1. Run `npx get-gum`
+        1. Run `npx get-gum@latest`
         2. Select ...
         3. See error
     validations:

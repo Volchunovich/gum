@@ -11,7 +11,7 @@ GUM (Globally Unified Modules) — reusable AI agent behavior bundles.
 
 | Command | Description |
 |---------|-------------|
-| npx get-gum | Install GUM |
+| npx get-gum@latest | Install GUM |
 | npx get-gum toggle | Enable/disable modules (interactive) |
 | npx get-gum toggle --local | Per-project team overrides |
 | npx get-gum toggle --personal | Per-project personal overrides |

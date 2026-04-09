@@ -14,7 +14,7 @@
 <br>
 
 ```bash
-npx get-gum
+npx get-gum@latest
 ```
 
 **Works with Claude Code, Gemini CLI, Copilot, Cursor, Windsurf, OpenCode, Codex, and more.**
@@ -35,8 +35,8 @@ npx get-gum
 
 Every AI coding agent user has the same problem:
 
-> *"Don't add Co-Authored-By to commits"*
 > *"Always run lint before committing"*
+> *"Use conventional commits in English"*
 > *"Use brainstorming before implementation"*
 
 You write these rules in CLAUDE.md. Then you start a new project — and write them again. Switch to Gemini — write them again. New chat session — hope the agent remembers.
@@ -93,7 +93,7 @@ npx get-gum toggle --personal   # set personal overrides
 ## Install
 
 ```bash
-npx get-gum
+npx get-gum@latest
 ```
 
 Interactive wizard asks:
@@ -104,8 +104,8 @@ Interactive wizard asks:
 **Non-interactive** for teams/CI:
 
 ```bash
-npx get-gum --claude --gemini --storage ~/shared/gum-modules
-npx get-gum --all --storage ~/Obsidian/vault/gum-modules
+npx get-gum@latest --claude --gemini --storage ~/shared/gum-modules
+npx get-gum@latest --all --storage ~/Obsidian/vault/gum-modules
 ```
 
 ### Starter Modules
