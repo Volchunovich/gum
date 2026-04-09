@@ -300,9 +300,9 @@ async function run() {
     }
   }
 
-  // Offer starter modules
+  // Offer starter modules (skip if GUM is already installed)
   const startersSource = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', 'starters');
-  if (fs.existsSync(startersSource)) {
+  if (!configExists && fs.existsSync(startersSource)) {
     const availableStarters = fs.readdirSync(startersSource).filter(
       d => fs.statSync(path.join(startersSource, d)).isDirectory()
     );

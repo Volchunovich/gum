@@ -33,17 +33,19 @@ npx get-gum@latest
 
 ## Why GUM?
 
-Every AI coding agent user has the same problem:
+CLAUDE.md, rules files, and system prompts all have the same flaw: they're **local and fragile**. They live inside one project, work with one tool, and vanish the moment you switch context.
 
-> *"Always run lint before committing"*
-> *"Use conventional commits in English"*
-> *"Use brainstorming before implementation"*
+**GUM modules are portable behavior.** They travel with you — across projects, runtimes, and sessions — without copy-pasting a single line.
 
-You write these rules in CLAUDE.md. Then you start a new project — and write them again. Switch to Gemini — write them again. New chat session — hope the agent remembers.
+| Without GUM | With GUM |
+|---|---|
+| Copy rules into every new repo | Define once, apply everywhere |
+| Rules silently ignored (~70% compliance) | Mechanical rules become hooks (100% enforcement) |
+| Switch from Claude to Gemini — rewrite everything | Same module works across runtimes |
+| Team members configure agents differently | Share a folder — everyone gets the same behavior |
+| "Did I set up lint-on-save here?" | Modules auto-load at session start |
 
-**GUM fixes this.** Create a module once, it works in every project, every chat, every runtime. No copy-pasting. No reminders. No forgetting.
-
-The key insight: **modules live outside your projects.** Store them in Obsidian, a shared folder, anywhere. Your agent reads them at the start of every session automatically.
+**Where modules live is up to you.** An Obsidian vault, a shared Dropbox folder, a git repo — GUM doesn't care. Your agent reads them at the start of every session automatically.
 
 ---
 
