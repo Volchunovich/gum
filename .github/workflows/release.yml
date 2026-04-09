@@ -163,7 +163,7 @@ jobs:
 
       - name: Install and test
         run: |
-          npm ci
+          npm install
           npm test
 
       - name: Commit pre-release version bump
@@ -269,7 +269,7 @@ jobs:
 
       - name: Install and test
         run: |
-          npm ci
+          npm install
           npm test
 
       - name: Dry-run publish validation
