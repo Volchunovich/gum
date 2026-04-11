@@ -1,0 +1,15 @@
+{
+  "claude": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(cat | jq -r '.tool_input.command'); if echo \"$CMD\" | grep -qE '^git commit'; then if [ -f package.json ] && grep -q '\"test\"' package.json; then npm test 2>&1 || { echo 'BLOCKED: tests failed — fix before committing' >&2; exit 2; }; elif [ -f pytest.ini ] || [ -f pyproject.toml ]; then python -m pytest 2>&1 || { echo 'BLOCKED: tests failed — fix before committing' >&2; exit 2; }; elif [ -f Cargo.toml ]; then cargo test 2>&1 || { echo 'BLOCKED: tests failed — fix before committing' >&2; exit 2; }; elif [ -f go.mod ]; then go test ./... 2>&1 || { echo 'BLOCKED: tests failed — fix before committing' >&2; exit 2; }; fi; fi; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

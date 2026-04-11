@@ -376,7 +376,7 @@ async function run() {
           choices: availableStarters.map(name => ({
             name: `${name} — ${starterDescriptions[name]}`,
             value: name,
-            checked: name !== 'thoughtful-dev',
+            checked: !['use-frontend-design', 'enforce-tdd'].includes(name),
           })),
         });
       }

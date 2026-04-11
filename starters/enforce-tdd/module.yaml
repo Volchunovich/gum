@@ -1,0 +1,4 @@
+name: enforce-tdd
+description: "Red-green-refactor — write failing tests first, then implement"
+version: 1.0.0
+enabled: true

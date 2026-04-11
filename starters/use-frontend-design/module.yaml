@@ -1,0 +1,4 @@
+name: use-frontend-design
+description: "Invoke /frontend-design skill before writing any UI code"
+version: 1.0.0
+enabled: false

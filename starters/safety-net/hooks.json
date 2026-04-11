@@ -1,0 +1,15 @@
+{
+  "claude": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(cat | jq -r '.tool_input.command'); BLOCKED=''; case \"$CMD\" in *'rm -rf /'*) BLOCKED='rm -rf /' ;; *'rm -rf ~'*) BLOCKED='rm -rf ~' ;; *'rm -rf .'*) BLOCKED='rm -rf .' ;; *'DROP TABLE'*|*'drop table'*) BLOCKED='DROP TABLE' ;; *'DROP DATABASE'*|*'drop database'*) BLOCKED='DROP DATABASE' ;; *'--force'*push*|*push*'--force'*|*'-f'*push*|*push*'-f'*) BLOCKED='force push' ;; *'reset --hard'*) BLOCKED='git reset --hard' ;; *'checkout -- .'*|*'checkout .'*) BLOCKED='git checkout .' ;; *'clean -f'*) BLOCKED='git clean -f' ;; *'terraform destroy'*) BLOCKED='terraform destroy' ;; esac; if [ -n \"$BLOCKED\" ]; then echo \"BLOCKED: $BLOCKED — too dangerous to run without explicit approval\" >&2; exit 2; fi; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

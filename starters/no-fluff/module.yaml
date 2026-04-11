@@ -1,0 +1,4 @@
+name: no-fluff
+description: "Concise responses — no emojis, no filler phrases, no unrequested docs"
+version: 1.0.0
+enabled: true

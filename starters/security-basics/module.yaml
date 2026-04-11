@@ -1,0 +1,4 @@
+name: security-basics
+description: "Block secrets in commits, enforce input validation and safe queries"
+version: 1.0.0
+enabled: true

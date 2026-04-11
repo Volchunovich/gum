@@ -1,0 +1,4 @@
+name: scope-guard
+description: "Minimal changes only — no unrequested refactoring, file creation, or cleanup"
+version: 1.0.0
+enabled: true

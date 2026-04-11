@@ -1,0 +1,4 @@
+name: auto-format
+description: "Auto-run prettier/formatter on every file edit via hooks"
+version: 1.0.0
+enabled: true

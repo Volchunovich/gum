@@ -1,0 +1,15 @@
+{
+  "claude": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(cat | jq -r '.tool_input.command'); if echo \"$CMD\" | grep -qE '^git (add|commit)'; then STAGED=$(git diff --cached --name-only 2>/dev/null); BLOCKED=''; for f in $STAGED; do case \"$f\" in .env|.env.*|*.pem|*.key|*credentials*|*secret*) BLOCKED=\"$BLOCKED $f\" ;; esac; done; if [ -n \"$BLOCKED\" ]; then echo \"BLOCKED: sensitive files staged:$BLOCKED — unstage them before committing\" >&2; exit 2; fi; fi; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

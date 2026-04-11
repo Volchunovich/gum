@@ -1,0 +1,4 @@
+name: test-gate
+description: "Run tests before committing, write tests for new code"
+version: 1.0.0
+enabled: true

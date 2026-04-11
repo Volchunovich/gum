@@ -1,0 +1,4 @@
+name: safety-net
+description: "Block dangerous commands — rm -rf, DROP TABLE, force push, reset --hard"
+version: 1.0.0
+enabled: true

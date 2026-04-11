@@ -77,6 +77,7 @@ enabled: true
 
 ```markdown
 ## Commit rules
+
 - Use conventional commits format: feat:, fix:, chore:, refactor:, docs:, test:
 - Write commit messages in English
 - Keep commit subject line under 72 characters
@@ -119,12 +120,12 @@ npx get-gum doctor        # health check
 
 GUM modules can contain **rules**, **hooks**, or both.
 
-| | Rules | Hooks |
-|---|---|---|
-| **What** | Natural language instructions | Shell commands |
-| **Compliance** | ~70% — agent can forget or skip | 100% — runs automatically |
-| **Good for** | "Discuss approach before coding" | "Run prettier after every edit" |
-| **Requires** | Nothing — just write markdown | Runtime support (see [table](#supported-runtimes)) |
+|                | Rules                            | Hooks                                              |
+| -------------- | -------------------------------- | -------------------------------------------------- |
+| **What**       | Natural language instructions    | Shell commands                                     |
+| **Compliance** | ~70% — agent can forget or skip  | 100% — runs automatically                          |
+| **Good for**   | "Discuss approach before coding" | "Run prettier after every edit"                    |
+| **Requires**   | Nothing — just write markdown    | Runtime support (see [table](#supported-runtimes)) |
 
 **Rule-to-hook promotion:** During `/gum-create`, GUM detects mechanical rules and suggests converting them to hooks. _"Always run lint before commit"_ shouldn't be a rule the agent might forget — it should be a hook that runs every time.
 
@@ -166,34 +167,34 @@ npx get-gum toggle --personal    # edit personal overrides
 
 Use these inside your AI coding session:
 
-| Skill | What it does |
-|---|---|
-| `/gum-create` | Create a new module — AI helps write rules, suggests hooks |
-| `/gum-edit` | Edit an existing module |
-| `/gum-sync` | Reload modules mid-session after changes |
+| Skill           | What it does                                               |
+| --------------- | ---------------------------------------------------------- |
+| `/gum-create`   | Create a new module — AI helps write rules, suggests hooks |
+| `/gum-edit`     | Edit an existing module                                    |
+| `/gum-sync`     | Reload modules mid-session after changes                   |
 | `/gum-optimize` | Analyze all rules, find duplicates, migrate from CLAUDE.md |
-| `/gum-status` | Show active modules in current session |
-| `/gum-help` | Quick reference |
+| `/gum-status`   | Show active modules in current session                     |
+| `/gum-help`     | Quick reference                                            |
 
 ---
 
 ## CLI Reference
 
-| Command | Description |
-|---|---|
-| `npx get-gum` | Interactive installer |
-| `npx get-gum list` | Show all modules with status |
-| `npx get-gum toggle` | Enable/disable modules interactively |
-| `npx get-gum toggle --local` | Per-project team overrides |
-| `npx get-gum toggle --personal` | Per-project personal overrides |
-| `npx get-gum sync` | Resync rules and hooks, auto-discover new modules |
-| `npx get-gum doctor` | Health check (context budget, integrity) |
-| `npx get-gum doctor --repair` | Auto-fix issues |
-| `npx get-gum export <name>` | Export module for sharing |
-| `npx get-gum import <file>` | Import module from file |
-| `npx get-gum remove` | Remove a module |
-| `npx get-gum update` | Update GUM integration files |
-| `npx get-gum uninstall` | Remove GUM (keeps your modules) |
+| Command                         | Description                                       |
+| ------------------------------- | ------------------------------------------------- |
+| `npx get-gum`                   | Interactive installer                             |
+| `npx get-gum list`              | Show all modules with status                      |
+| `npx get-gum toggle`            | Enable/disable modules interactively              |
+| `npx get-gum toggle --local`    | Per-project team overrides                        |
+| `npx get-gum toggle --personal` | Per-project personal overrides                    |
+| `npx get-gum sync`              | Resync rules and hooks, auto-discover new modules |
+| `npx get-gum doctor`            | Health check (context budget, integrity)          |
+| `npx get-gum doctor --repair`   | Auto-fix issues                                   |
+| `npx get-gum export <name>`     | Export module for sharing                         |
+| `npx get-gum import <file>`     | Import module from file                           |
+| `npx get-gum remove`            | Remove a module                                   |
+| `npx get-gum update`            | Update GUM integration files                      |
+| `npx get-gum uninstall`         | Remove GUM (keeps your modules)                   |
 
 ---
 
@@ -201,29 +202,35 @@ Use these inside your AI coding session:
 
 GUM ships with ready-to-use modules you can enable during install:
 
-**clean-commits** — Conventional commit format, English, max 72 chars
-
-**code-quality** — Auto-format with prettier after edits, lint before commit (uses hooks for 100% enforcement)
-
-**thoughtful-dev** — Discuss approach before implementing, review for edge cases
+| Module | Type | What it does |
+|---|---|---|
+| **scope-guard** | rules | Minimal changes only — no unrequested refactoring, file creation, or cleanup |
+| **safety-net** | hooks | Block dangerous commands — `rm -rf`, `DROP TABLE`, force push, `reset --hard` |
+| **clean-commits** | rules | Conventional commits, English, max 72 chars |
+| **auto-format** | hooks | Auto-run prettier on every file edit |
+| **test-gate** | hooks + rules | Run tests before committing, write tests for new code |
+| **enforce-tdd** | rules | Red-green-refactor — write failing tests first, then implement |
+| **no-fluff** | rules | Concise responses — no emojis, no filler phrases, no unrequested docs |
+| **security-basics** | hooks + rules | Block secrets in commits, enforce input validation and safe queries |
+| **use-frontend-design** | rules + skill | Invoke `/frontend-design` skill before writing any UI code (off by default) |
 
 ---
 
 ## Supported Runtimes
 
-| Runtime | Rules | Hooks |
-|---|---|---|
-| Claude Code | yes | yes |
-| Gemini CLI | yes | yes |
-| GitHub Copilot | yes | — |
-| Cursor | yes | yes |
-| Windsurf | yes | — |
-| OpenCode | yes | yes |
-| Codex | yes | yes |
-| Kilo | yes | — |
-| Antigravity | yes | — |
-| Augment | yes | — |
-| Trae | yes | — |
+| Runtime        | Rules | Hooks |
+| -------------- | ----- | ----- |
+| Claude Code    | yes   | yes   |
+| Gemini CLI     | yes   | yes   |
+| GitHub Copilot | yes   | —     |
+| Cursor         | yes   | yes   |
+| Windsurf       | yes   | —     |
+| OpenCode       | yes   | yes   |
+| Codex          | yes   | yes   |
+| Kilo           | yes   | —     |
+| Antigravity    | yes   | —     |
+| Augment        | yes   | —     |
+| Trae           | yes   | —     |
 
 Rules work on all runtimes. Hooks use each runtime's native format — GUM handles the conversion.
 
