@@ -2,9 +2,7 @@
 
 # GUM — Globally Unified Modules
 
-**Reusable AI agent behavior bundles. Define rules and hooks once, use everywhere — across projects, chats, and runtimes.**
-
-**Solves the "repeat yourself" problem — stop configuring the same behaviors in every new project and chat session.**
+**Your AI agent rules and hooks, packaged once — applied everywhere.**
 
 [![npm version](https://img.shields.io/npm/v/get-gum?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-gum)
 [![Tests](https://img.shields.io/github/actions/workflow/status/Volchunovich/gum/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/Volchunovich/gum/actions/workflows/test.yml)
@@ -17,238 +15,244 @@
 npx get-gum@latest
 ```
 
-**Works with Claude Code, Gemini CLI, Copilot, Cursor, Windsurf, OpenCode, Codex, and more.**
-
-<br>
-
-_"I was copy-pasting the same CLAUDE.md rules into every project. Now I define them once and they just work everywhere."_
-
-<br>
-
-[Why GUM?](#why-gum) · [How It Works](#how-it-works) · [Commands](#commands) · [In-Chat Skills](#in-chat-skills) · [Contributing](CONTRIBUTING.md)
+Works with **Claude Code · Gemini CLI · Copilot · Cursor · Windsurf · Codex** and [5 more](#supported-runtimes).
 
 </div>
 
 ---
 
-## Why GUM?
+## The Problem
 
-CLAUDE.md, rules files, and system prompts all have the same flaw: they're **local and fragile**. They live inside one project, work with one tool, and vanish the moment you switch context.
+Every time you start a new project or open a new chat, your AI agent forgets how you like to work:
 
-**GUM modules are portable behavior.** They travel with you — across projects, runtimes, and sessions — without copy-pasting a single line.
+- Commit messages in the wrong format — again
+- No linting after edits — again
+- Agent jumps into code without discussing the approach — again
 
-| Without GUM                                       | With GUM                                         |
-| ------------------------------------------------- | ------------------------------------------------ |
-| Copy rules into every new repo                    | Define once, apply everywhere                    |
-| Rules silently ignored (~70% compliance)          | Mechanical rules become hooks (100% enforcement) |
-| Switch from Claude to Gemini — rewrite everything | Same module works across runtimes                |
-| Team members configure agents differently         | Share a folder — everyone gets the same behavior |
-| "Did I set up lint-on-save here?"                 | Modules auto-load at session start               |
+You end up copy-pasting the same rules into `CLAUDE.md`, `.cursorrules`, `GEMINI.md` across every repo. Update one — manually update the rest. Switch from Claude to Gemini — rewrite everything.
 
-**Where modules live is up to you.** An Obsidian vault, a shared Dropbox folder, a git repo — GUM doesn't care. Your agent reads them at the start of every session automatically.
+**GUM fixes this.** Define your rules once as modules. They auto-load in every project, every chat, every runtime.
 
 ---
 
-## How It Works
+## Quick Start
 
-A **module** is a folder with three files:
-
-```
-my-module/
-  module.yaml    # name, description, version, enabled
-  rules.md       # natural language instructions for the agent
-  hooks.json     # system-level hooks per runtime (optional)
-```
-
-**Rules** are instructions the agent follows. They work ~70% of the time because agents can forget or judge them irrelevant.
-
-**Hooks** are system-level commands that execute automatically. They work 100% of the time — the agent can't ignore them.
-
-GUM helps you decide which is which. When you create a module, it suggests: _"This rule is mechanical — want to make it a hook instead?"_
-
-### The Flow
-
-```
-1. npx get-gum                    → Install, pick runtimes, set storage path
-2. /gum-create                    → Create a module in chat with AI help
-3. Open any project, any chat     → Agent reads your modules automatically
-4. npx get-gum toggle             → Enable/disable modules interactively
-5. npx get-gum doctor             → Health check your setup
-```
-
-### Per-Project Control
-
-Not every module makes sense in every project. Override globally-enabled modules per project:
-
-- **`.gum.json`** — team overrides (commit to git)
-- **`.gum.local.json`** — personal overrides (gitignored)
-
-Priority: `.gum.local.json` > `.gum.json` > `module.yaml` (global default)
-
-```bash
-npx get-gum toggle --local      # set team overrides
-npx get-gum toggle --personal   # set personal overrides
-```
-
----
-
-## Install
+### 1. Install
 
 ```bash
 npx get-gum@latest
 ```
 
-Interactive wizard asks:
+The wizard asks which runtimes you use and where to store modules.
 
-1. Which runtimes (Claude Code, Gemini, Copilot, Cursor, etc.)
-2. Where to store modules (Obsidian vault recommended)
-3. Optional starter modules to get started immediately
+### 2. Create a module
 
-**Non-interactive** for teams/CI:
+In any AI chat session:
 
-```bash
-npx get-gum@latest --claude --gemini --storage ~/shared/gum-modules
-npx get-gum@latest --all --storage ~/Obsidian/vault/gum-modules
+```
+/gum-create
 ```
 
-### Starter Modules
+Tell the agent what behavior you want. It creates the module files for you.
 
-GUM ships with pre-built modules you can enable during install:
+Or create one manually — a module is just a folder with up to 3 files:
 
-| Module             | What it does                                       |
-| ------------------ | -------------------------------------------------- |
-| **clean-commits**  | Conventional commits, English, max 72 chars        |
-| **code-quality**   | Auto-format after edits, lint before commit        |
-| **thoughtful-dev** | Discuss before implementing, review for edge cases |
+```
+clean-commits/
+  module.yaml    # metadata
+  rules.md       # what the agent should do
+  hooks.json     # automated enforcement (optional)
+```
+
+**module.yaml** — who is this module:
+
+```yaml
+name: clean-commits
+description: "Conventional commits, English, max 72 chars"
+version: 1.0.0
+enabled: true
+```
+
+**rules.md** — instructions for the agent (natural language):
+
+```markdown
+## Commit rules
+- Use conventional commits format: feat:, fix:, chore:, refactor:, docs:, test:
+- Write commit messages in English
+- Keep commit subject line under 72 characters
+- Commit body maximum 3 lines
+```
+
+**hooks.json** — system-level automation that the agent can't skip (optional):
+
+```json
+{
+  "claude": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write \"$FILE\" 2>/dev/null; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### 3. Done
+
+Open any project, start any chat — your modules are already active. No setup, no copy-pasting.
+
+```bash
+npx get-gum list          # see what's enabled
+npx get-gum toggle        # turn modules on/off
+npx get-gum doctor        # health check
+```
 
 ---
 
-## Commands
+## Rules vs Hooks
 
-### CLI
+GUM modules can contain **rules**, **hooks**, or both.
 
-| Command                         | Description                                                       |
-| ------------------------------- | ----------------------------------------------------------------- |
-| `npx get-gum`                   | Interactive installer                                             |
-| `npx get-gum toggle`            | Enable/disable modules (space = toggle, enter = save)             |
-| `npx get-gum toggle --local`    | Per-project team overrides                                        |
-| `npx get-gum toggle --personal` | Per-project personal overrides                                    |
-| `npx get-gum list`              | Show all modules with status                                      |
-| `npx get-gum remove`            | Remove a module                                                   |
-| `npx get-gum doctor`            | Health check — context budget, integrity, skill refs              |
-| `npx get-gum doctor --repair`   | Auto-fix orphaned entries, resync hooks                           |
-| `npx get-gum export <name>`     | Export module to `.gum.json` for sharing                          |
-| `npx get-gum import <file>`     | Import module from file or URL                                    |
-| `npx get-gum sync`              | Resync rules and hooks to all runtimes, auto-discover new modules |
-| `npx get-gum update`            | Update GUM skills in all runtimes                                 |
-| `npx get-gum uninstall`         | Remove GUM (keeps your modules)                                   |
-| `npx get-gum --help`            | Show all flags and examples                                       |
+| | Rules | Hooks |
+|---|---|---|
+| **What** | Natural language instructions | Shell commands |
+| **Compliance** | ~70% — agent can forget or skip | 100% — runs automatically |
+| **Good for** | "Discuss approach before coding" | "Run prettier after every edit" |
+| **Requires** | Nothing — just write markdown | Runtime support (see [table](#supported-runtimes)) |
 
-### In-Chat Skills
+**Rule-to-hook promotion:** During `/gum-create`, GUM detects mechanical rules and suggests converting them to hooks. _"Always run lint before commit"_ shouldn't be a rule the agent might forget — it should be a hook that runs every time.
 
-Use these inside your AI coding agent chat:
+---
 
-| Skill           | Description                                                                                  |
-| --------------- | -------------------------------------------------------------------------------------------- |
-| `/gum-create`   | Create a module — AI helps write rules, suggests hooks for mechanical tasks                  |
-| `/gum-edit`     | Edit an existing module's rules and hooks                                                    |
-| `/gum-sync`     | Reload modules in current session after toggle/create/edit                                   |
-| `/gum-optimize` | Analyze full context (CLAUDE.md + modules), find duplicates, migrate rules, detect conflicts |
-| `/gum-status`   | Show active modules and their rules in current session                                       |
-| `/gum-help`     | Quick reference                                                                              |
+## Per-Project Overrides
+
+Not every module belongs in every project. You can override enabled/disabled state per project:
+
+```json
+// .gum.json — commit to git, whole team gets these overrides
+{
+  "overrides": {
+    "clean-commits": true,
+    "code-quality": false
+  }
+}
+```
+
+```json
+// .gum.local.json — gitignored, just for you
+{
+  "overrides": {
+    "my-experimental-module": true
+  }
+}
+```
+
+Priority: `.gum.local.json` > `.gum.json` > `module.yaml` default.
+
+```bash
+npx get-gum toggle --local       # edit team overrides
+npx get-gum toggle --personal    # edit personal overrides
+```
+
+---
+
+## In-Chat Skills
+
+Use these inside your AI coding session:
+
+| Skill | What it does |
+|---|---|
+| `/gum-create` | Create a new module — AI helps write rules, suggests hooks |
+| `/gum-edit` | Edit an existing module |
+| `/gum-sync` | Reload modules mid-session after changes |
+| `/gum-optimize` | Analyze all rules, find duplicates, migrate from CLAUDE.md |
+| `/gum-status` | Show active modules in current session |
+| `/gum-help` | Quick reference |
+
+---
+
+## CLI Reference
+
+| Command | Description |
+|---|---|
+| `npx get-gum` | Interactive installer |
+| `npx get-gum list` | Show all modules with status |
+| `npx get-gum toggle` | Enable/disable modules interactively |
+| `npx get-gum toggle --local` | Per-project team overrides |
+| `npx get-gum toggle --personal` | Per-project personal overrides |
+| `npx get-gum sync` | Resync rules and hooks, auto-discover new modules |
+| `npx get-gum doctor` | Health check (context budget, integrity) |
+| `npx get-gum doctor --repair` | Auto-fix issues |
+| `npx get-gum export <name>` | Export module for sharing |
+| `npx get-gum import <file>` | Import module from file |
+| `npx get-gum remove` | Remove a module |
+| `npx get-gum update` | Update GUM integration files |
+| `npx get-gum uninstall` | Remove GUM (keeps your modules) |
+
+---
+
+## Starter Modules
+
+GUM ships with ready-to-use modules you can enable during install:
+
+**clean-commits** — Conventional commit format, English, max 72 chars
+
+**code-quality** — Auto-format with prettier after edits, lint before commit (uses hooks for 100% enforcement)
+
+**thoughtful-dev** — Discuss approach before implementing, review for edge cases
 
 ---
 
 ## Supported Runtimes
 
-| Runtime        | Rules | Hooks |
-| -------------- | ----- | ----- |
-| Claude Code    | ✅    | ✅    |
-| Gemini CLI     | ✅    | ✅    |
-| GitHub Copilot | ✅    | —     |
-| Cursor         | ✅    | ✅    |
-| Windsurf       | ✅    | —     |
-| OpenCode       | ✅    | ✅    |
-| Codex          | ✅    | ✅    |
-| Kilo           | ✅    | —     |
-| Antigravity    | ✅    | —     |
-| Augment        | ✅    | —     |
-| Trae           | ✅    | —     |
+| Runtime | Rules | Hooks |
+|---|---|---|
+| Claude Code | yes | yes |
+| Gemini CLI | yes | yes |
+| GitHub Copilot | yes | — |
+| Cursor | yes | yes |
+| Windsurf | yes | — |
+| OpenCode | yes | yes |
+| Codex | yes | yes |
+| Kilo | yes | — |
+| Antigravity | yes | — |
+| Augment | yes | — |
+| Trae | yes | — |
 
 Rules work on all runtimes. Hooks use each runtime's native format — GUM handles the conversion.
 
 ---
 
-## Smart Rule Quality
-
-GUM doesn't just store rules — it helps you write rules that agents actually follow.
-
-### Rule-to-Hook Promotion
-
-During `/gum-create` and `/gum-optimize`, GUM detects mechanical rules and suggests converting them to hooks:
-
-> _"Always run lint before commit"_ → can be a hook (100% guaranteed)
-> _"Use brainstorming before implementation"_ → stays as a rule (needs judgment)
-
-### Context Budget
-
-Agents reliably follow ~150 lines of instructions. More than that and compliance drops. `gum doctor` tracks your total and warns before you hit the limit. `/gum-optimize` helps reduce it.
-
-### CLAUDE.md Migration
-
-Already have rules scattered across CLAUDE.md files? `/gum-optimize` can migrate them into portable GUM modules.
-
----
-
-## Storage
-
-Modules live in any folder. **Obsidian vault recommended** — modules are markdown, so you get rich editing, graph view, and cross-device sync for free.
-
-GUM has no Obsidian dependency. It just reads files from a path.
-
----
-
-## Architecture
+## How It Works Under the Hood
 
 ```
-~/.gum/
-  config.yaml          # runtimes, storage path
-  registry.json        # module name → path mapping
-  hooks-manifest.json  # tracks which hooks GUM manages
-
-~/.claude/rules/
-  gum.md               # integration file (override instructions)
-  gum/
-    clean-commits.md   # synced from module — auto-loaded by Claude Code
-    code-quality.md    # synced from module — auto-loaded
-    my-module.md       # synced from module — auto-loaded
-
-~/Obsidian/vault/gum-modules/   # source of truth (or any folder)
-  clean-commits/
-    module.yaml        # manifest
-    rules.md           # rules (synced to ~/.claude/rules/gum/)
-    hooks.json         # hooks (synced to runtime settings)
-  my-module/
-    module.yaml
+~/your-modules/                     ~/.claude/rules/gum/
+  clean-commits/                      clean-commits.md  ← synced
+    module.yaml        gum sync →     code-quality.md   ← synced
+    rules.md           ────────→      my-module.md      ← synced
+    hooks.json
+  code-quality/                     ~/.claude/settings.json
+    module.yaml                       hooks: { ... }    ← synced
     rules.md
+    hooks.json
 ```
 
-`gum sync` copies enabled module rules into `~/.claude/rules/gum/` where they are auto-loaded at session start — zero permission prompts, any number of modules.
+Modules live in any folder you choose (Obsidian vault, Dropbox, git repo — your call). `gum sync` copies enabled rules into runtime-specific locations where they auto-load at session start. No permission prompts, no manual setup.
+
+**Context budget:** Agents reliably follow ~150 lines of instructions. `gum doctor` tracks your total and warns before you exceed it. `/gum-optimize` helps reduce bloat.
 
 ---
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style, and the issue-first contribution process.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and the issue-first contribution process.
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
-
----
-
-<div align="center">
-
-**AI agents are powerful. GUM makes them consistent.**
-
-</div>
+MIT
