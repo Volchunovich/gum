@@ -143,9 +143,51 @@ For EVERY behavior the user describes, classify it:
    }
    ```
 
-   **CRITICAL FORMAT:** Each runtime key contains an object where keys are event names (PreToolUse, PostToolUse, Stop, etc.) and values are arrays of hook entries. This matches the Claude Code settings.json hooks format exactly. Do NOT use a flat array — it MUST be `{ "EventName": [entries] }`.
+   **CRITICAL FORMAT:** Each runtime key contains an object where keys are event names and values are arrays of hook entries. Do NOT use a flat array — it MUST be `{ "EventName": [entries] }`.
 
-   **MUST include a section for EVERY runtime listed in config.yaml.** Do not skip runtimes.
+   **MUST include a section for EVERY runtime listed in config.yaml.** Each runtime has its own hook format:
+
+   ### Runtime Hook Reference
+
+   **Claude Code & Codex** (identical format):
+   - Events: `PreToolUse`, `PostToolUse`, `Stop`
+   - Matcher: regex string, e.g. `"Bash"`, `"Edit|Write"`
+   - Blocking: `exit 2` with reason on stderr
+   - Input: `cat | jq -r '.tool_input.command'` or `.tool_input.file_path`
+
+   **Gemini CLI**:
+   - Events: `BeforeTool`, `AfterTool`, `BeforeAgent`, `AfterAgent`, `SessionStart`, `SessionEnd`
+   - Matcher: regex string, e.g. `"shell"`, `"edit_file|write_file"`
+   - Blocking: `exit 2` with reason on stderr
+   - Input: `cat | jq -r '.tool_input.command // .input.command // empty'`
+   - Output must be JSON on stdout, stderr for logs
+
+   **Cursor**:
+   - Events (camelCase!): `preToolUse`, `postToolUse`, `beforeShellExecution`, `afterShellExecution`, `afterFileEdit`
+   - Matcher: object, e.g. `{"tool_name": "shell"}` — NOT a string
+   - Blocking: JSON output `{"decision":"deny","reason":"..."}` for preToolUse, `{"permission":"deny","userMessage":"..."}` for beforeShellExecution
+   - Does NOT use exit codes for blocking — always `exit 0` with JSON response
+
+   **OpenCode**: No hooks support — skip this runtime.
+
+   **Example multi-runtime hooks.json:**
+
+   ```json
+   {
+     "claude": {
+       "PreToolUse": [{ "matcher": "Bash", "hooks": [{ "type": "command", "command": "..." }] }]
+     },
+     "codex": {
+       "PreToolUse": [{ "matcher": "Bash", "hooks": [{ "type": "command", "command": "..." }] }]
+     },
+     "gemini": {
+       "BeforeTool": [{ "matcher": "shell", "hooks": [{ "type": "command", "command": "..." }] }]
+     },
+     "cursor": {
+       "preToolUse": [{ "matcher": {"tool_name": "shell"}, "hooks": [{ "type": "command", "command": "..." }] }]
+     }
+   }
+   ```
 
 ### Phase 4: Sync and Activate
 

@@ -11,5 +11,43 @@
         ]
       }
     ]
+  },
+  "codex": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(cat | jq -r '.tool_input.command'); if echo \"$CMD\" | grep -qE '^git (add|commit)'; then STAGED=$(git diff --cached --name-only 2>/dev/null); BLOCKED=''; for f in $STAGED; do case \"$f\" in .env|.env.*|*.pem|*.key|*credentials*|*secret*) BLOCKED=\"$BLOCKED $f\" ;; esac; done; if [ -n \"$BLOCKED\" ]; then echo \"BLOCKED: sensitive files staged:$BLOCKED — unstage them before committing\" >&2; exit 2; fi; fi; exit 0"
+          }
+        ]
+      }
+    ]
+  },
+  "gemini": {
+    "BeforeTool": [
+      {
+        "matcher": "shell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(cat | jq -r '.tool_input.command // .input.command // empty'); if echo \"$CMD\" | grep -qE '^git (add|commit)'; then STAGED=$(git diff --cached --name-only 2>/dev/null); BLOCKED=''; for f in $STAGED; do case \"$f\" in .env|.env.*|*.pem|*.key|*credentials*|*secret*) BLOCKED=\"$BLOCKED $f\" ;; esac; done; if [ -n \"$BLOCKED\" ]; then echo \"BLOCKED: sensitive files staged:$BLOCKED\" >&2; exit 2; fi; fi; exit 0"
+          }
+        ]
+      }
+    ]
+  },
+  "cursor": {
+    "beforeShellExecution": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(cat | jq -r '.tool_input.command // .input.command // empty'); if echo \"$CMD\" | grep -qE '^git (add|commit)'; then STAGED=$(git diff --cached --name-only 2>/dev/null); BLOCKED=''; for f in $STAGED; do case \"$f\" in .env|.env.*|*.pem|*.key|*credentials*|*secret*) BLOCKED=\"$BLOCKED $f\" ;; esac; done; if [ -n \"$BLOCKED\" ]; then printf '{\"permission\":\"deny\",\"userMessage\":\"Sensitive files staged:%s\"}' \"$BLOCKED\"; exit 0; fi; fi; echo '{}'; exit 0"
+          }
+        ]
+      }
+    ]
   }
 }

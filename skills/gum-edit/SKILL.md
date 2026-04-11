@@ -104,9 +104,10 @@ Ask what they want to change. Listen for:
 
 1. **Update the relevant files** -- rules.md, hooks.json, and/or module.yaml
 2. **Bump the version** in module.yaml if the change is substantive
-3. **Run `npx get-gum sync` via Bash** -- this resyncs rules to runtime rules directories and merges hooks into runtime settings. Do NOT manually edit registry.json or copy files.
-4. **Read the updated rules file** -- after sync, read `~/.claude/rules/gum/<module-name>.md` so changes take effect immediately in this session.
-5. **Confirm changes** with a summary:
+3. **When creating/updating hooks.json** -- use the correct format for EACH runtime listed in config.yaml. See the Runtime Hook Reference below.
+4. **Run `npx get-gum sync` via Bash** -- this resyncs rules to runtime rules directories and merges hooks into runtime settings. Do NOT manually edit registry.json or copy files.
+5. **Read the updated rules file** -- after sync, read `~/.claude/rules/gum/<module-name>.md` so changes take effect immediately in this session.
+6. **Confirm changes** with a summary:
    > "Updated `enforce-tdd`: added 1 rule, promoted 1 rule to hook, removed 1 stale rule. Synced."
 
 ## Key Rules
@@ -118,6 +119,30 @@ Ask what they want to change. Listen for:
 - **NEVER** edit a module without showing its current state first
 - **NEVER** manually write to `~/.gum/registry.json` -- use `npx get-gum sync`
 - **NEVER** silently skip missing files -- if hooks.json doesn't exist, say so
+
+## Runtime Hook Reference
+
+When creating or editing hooks, use the correct format for each runtime:
+
+**Claude Code & Codex** (identical format):
+- Events: `PreToolUse`, `PostToolUse`, `Stop`
+- Matcher: regex string, e.g. `"Bash"`, `"Edit|Write"`
+- Blocking: `exit 2` with reason on stderr
+- Input: `cat | jq -r '.tool_input.command'` or `.tool_input.file_path`
+
+**Gemini CLI**:
+- Events: `BeforeTool`, `AfterTool`, `BeforeAgent`, `AfterAgent`, `SessionStart`, `SessionEnd`
+- Matcher: regex string, e.g. `"shell"`, `"edit_file|write_file"`
+- Blocking: `exit 2` with reason on stderr
+- Input: `cat | jq -r '.tool_input.command // .input.command // empty'`
+
+**Cursor**:
+- Events (camelCase!): `preToolUse`, `postToolUse`, `beforeShellExecution`, `afterShellExecution`, `afterFileEdit`
+- Matcher: object, e.g. `{"tool_name": "shell"}` — NOT a string
+- Blocking: JSON output `{"decision":"deny","reason":"..."}` for preToolUse, `{"permission":"deny","userMessage":"..."}` for beforeShellExecution
+- Does NOT use exit codes for blocking — always `exit 0` with JSON response
+
+**OpenCode**: No hooks support — skip this runtime.
 
 ## Anti-Patterns
 
