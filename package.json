@@ -49,7 +49,7 @@
     "vitest": "^4.1.4"
   },
   "dependencies": {
-    "@inquirer/prompts": "8.4.1",
+    "@inquirer/prompts": "8.4.2",
     "commander": "14.0.3",
     "yaml": "2.8.3"
   }
