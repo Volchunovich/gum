@@ -46,7 +46,7 @@
     "node": ">=20.0.0"
   },
   "devDependencies": {
-    "vitest": "^4.1.4"
+    "vitest": "^5.0.4"
   },
   "dependencies": {
     "@inquirer/prompts": "8.4.1",
